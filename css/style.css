@@ -1,0 +1,199 @@
+/* Nalas Waldschule – ruhiges, kindgerechtes Design.
+   Grosse Buttons, klarer Kontrast, wenig Text, fehlerfreundlich. */
+
+:root {
+  --gruen: #3f7a5e;
+  --gruen-hell: #6fb191;
+  --sand: #f7f3e8;
+  --sand-tief: #efe7d3;
+  --braun: #7a5c3e;
+  --text: #2e2a24;
+  --weiss: #ffffff;
+  --gut: #4a9d6e;
+  --achtung: #e07a4a;
+  --schatten: 0 6px 0 rgba(0,0,0,0.12);
+  --rund: 22px;
+  --tap: 84px; /* Mindestgrösse für Finger */
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--sand);
+  color: var(--text);
+  font-family: "Comic Sans MS", "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-size: 20px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) 16px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ---------- Bausteine ---------- */
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: auf .25s ease;
+}
+@keyframes auf { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+h1 { font-size: 2rem; margin: .2em 0; color: var(--gruen); }
+h2 { font-size: 1.5rem; margin: .1em 0; }
+p.gross { font-size: 1.25rem; line-height: 1.4; }
+
+.knopf {
+  border: none;
+  border-radius: var(--rund);
+  background: var(--gruen);
+  color: var(--weiss);
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.35rem;
+  padding: 20px 26px;
+  min-height: var(--tap);
+  box-shadow: var(--schatten);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform .08s ease, filter .1s ease;
+}
+.knopf:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+.knopf.gross { width: 100%; font-size: 1.6rem; padding: 26px; }
+.knopf.zweit { background: var(--sand-tief); color: var(--braun); box-shadow: 0 6px 0 rgba(0,0,0,0.06); }
+.knopf.klein { font-size: 1rem; padding: 12px 18px; min-height: 52px; }
+
+.karte {
+  background: var(--weiss);
+  border-radius: var(--rund);
+  padding: 22px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.zentriert { text-align: center; }
+.spacer { flex: 1; }
+.reihe { display: flex; gap: 12px; flex-wrap: wrap; }
+.reihe.mitte { justify-content: center; align-items: center; }
+
+.nala {
+  font-size: 4.5rem;
+  line-height: 1;
+  animation: wippen 2.5s ease-in-out infinite;
+}
+@keyframes wippen { 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+
+.hinweis { color: var(--braun); font-size: 1rem; }
+
+/* Startbildschirm Spielkacheln */
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.kachel {
+  background: var(--weiss);
+  border: 3px solid transparent;
+  border-radius: var(--rund);
+  padding: 18px 10px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  font-weight: 700;
+}
+.kachel .emoji { font-size: 2.6rem; display: block; margin-bottom: 6px; }
+.kachel:active { transform: translateY(2px); }
+
+/* Fortschrittspunkte in der Session */
+.fortschritt { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
+.punkt { width: 16px; height: 16px; border-radius: 50%; background: var(--sand-tief); }
+.punkt.aktiv { background: var(--gruen-hell); }
+.punkt.fertig { background: var(--gruen); }
+
+/* ---------- Spielfläche ---------- */
+.spielfeld {
+  position: relative;
+  flex: 1;
+  min-height: 380px;
+  background: var(--sand-tief);
+  border-radius: var(--rund);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spiel-kopf { display: flex; justify-content: space-between; align-items: center; }
+.frage { font-size: 2rem; font-weight: 700; text-align: center; }
+
+/* Rückmeldung */
+.feedback {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; pointer-events: none; opacity: 0;
+}
+.feedback.zeig { animation: pop .6s ease; }
+@keyframes pop { 0%{opacity:0; transform:scale(.5);} 30%{opacity:1; transform:scale(1.1);} 100%{opacity:0; transform:scale(1);} }
+
+/* Auswahl-Kacheln in Spielen (Emoji-Bilder, Zahlen) */
+.auswahl { display: grid; gap: 14px; width: 100%; padding: 12px; }
+.auswahl.zwei { grid-template-columns: 1fr 1fr; }
+.auswahl.drei { grid-template-columns: 1fr 1fr 1fr; }
+.wahl {
+  background: var(--weiss);
+  border: 3px solid var(--sand-tief);
+  border-radius: var(--rund);
+  min-height: var(--tap);
+  font-size: 2.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.wahl:active { transform: scale(.97); }
+.wahl.richtig { border-color: var(--gut); background: #eafaf0; }
+.wahl.falsch  { border-color: var(--achtung); background: #fdefe6; }
+
+/* Corsi / Finde-mich Raster */
+.raster { display: grid; gap: 10px; width: 100%; max-width: 340px; }
+.zelle {
+  aspect-ratio: 1;
+  background: var(--weiss);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; cursor: pointer;
+  border: 2px solid var(--sand);
+}
+.zelle.leuchtet { background: var(--gruen-hell); transform: scale(1.05); }
+.zelle.getippt { background: var(--gruen); }
+
+/* Pilz-Stopp bewegliches Feld */
+.pilz {
+  position: absolute;
+  font-size: 3.4rem;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+.pilz:active { transform: scale(.9); }
+
+/* Eltern-Bereich */
+.balken { background: var(--sand-tief); border-radius: 10px; height: 20px; overflow: hidden; }
+.balken > span { display:block; height:100%; background: var(--gruen-hell); }
+.zeile { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--sand-tief); }
+.pin-feld { font-size: 2.4rem; letter-spacing: .3em; text-align:center; }
+.pin-tasten { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:300px; margin:0 auto; }
+
+/* Album */
+.album { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.abzeichen { aspect-ratio:1; background:var(--weiss); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:2.4rem; box-shadow:0 3px 8px rgba(0,0,0,.06); }
+.abzeichen.leer { opacity:.25; font-size:1.6rem; }
+
+.mini { font-size:.9rem; color:var(--braun); }
