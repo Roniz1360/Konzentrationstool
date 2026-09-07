@@ -1,87 +1,110 @@
-/* Nalas Waldschule – ruhiges, kindgerechtes Design.
-   Grosse Buttons, klarer Kontrast, wenig Text, fehlerfreundlich. */
+/* Nalas Waldschule – warmes, freundliches, kindgerechtes Design.
+   Sonniger Wald, weiche runde Formen, grosse Buttons, fehlerfreundlich.
+   Bewusst EIN heller, freundlicher Look (kein Dark Mode). */
 
 :root {
-  --gruen: #3f7a5e;
-  --gruen-hell: #6fb191;
-  --sand: #f7f3e8;
-  --sand-tief: #efe7d3;
-  --braun: #7a5c3e;
-  --text: #2e2a24;
-  --weiss: #ffffff;
-  --gut: #4a9d6e;
-  --achtung: #e07a4a;
-  --schatten: 0 6px 0 rgba(0,0,0,0.12);
-  --rund: 22px;
-  --tap: 84px; /* Mindestgrösse für Finger */
+  /* Farben: sonniger Wald */
+  --himmel1: #eaf7ef;
+  --himmel2: #d7eede;
+  --sand:    #f8f4ea;
+  --blatt:      #52ab77;
+  --blatt-dunkel: #3f8a5f;
+  --blatt-tief:   #2f6b49;
+  --sonne:  #f7c948;
+  --sonne-tief: #e0a92e;
+  --beere:  #ef8a63;
+  --himbeer:#e46a8b;
+  --weiss:  #ffffff;
+  --text:   #33413a;
+  --braun:  #8a6b4a;
+
+  --schatten-knopf: 0 6px 0;
+  --rund: 26px;
+  --tap: 88px;
+
+  --font-titel: "Fredoka", "Baloo 2", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  --font-text:  "Nunito", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   margin: 0;
-  height: 100%;
-  background: var(--sand);
+  min-height: 100%;
   color: var(--text);
-  font-family: "Comic Sans MS", "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-text);
   font-size: 20px;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
 }
+body {
+  /* Sonne oben rechts + weiche Hügel unten */
+  background:
+    radial-gradient(120px 120px at 82% 92px, rgba(247,201,72,.55), rgba(247,201,72,0) 70%),
+    radial-gradient(140% 120px at 50% 100%, rgba(82,171,119,.30), rgba(82,171,119,0) 70%),
+    linear-gradient(180deg, var(--himmel1) 0%, var(--himmel2) 46%, var(--sand) 100%);
+  background-attachment: fixed;
+}
 
 #app {
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: max(16px, env(safe-area-inset-top)) 16px 24px;
+  padding: max(18px, env(safe-area-inset-top)) 18px 26px;
   max-width: 720px;
   margin: 0 auto;
 }
 
 /* ---------- Bausteine ---------- */
-
 .screen {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  animation: auf .25s ease;
+  animation: auf .3s ease both;
 }
-@keyframes auf { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+@keyframes auf { from { opacity: 0; transform: translateY(10px);} to {opacity:1; transform:none;} }
 
-h1 { font-size: 2rem; margin: .2em 0; color: var(--gruen); }
-h2 { font-size: 1.5rem; margin: .1em 0; }
-p.gross { font-size: 1.25rem; line-height: 1.4; }
+h1 { font-family: var(--font-titel); font-size: 2.15rem; margin: .15em 0; color: var(--blatt-dunkel); text-wrap: balance; letter-spacing: .5px; }
+h2 { font-family: var(--font-titel); font-size: 1.6rem; margin: .1em 0; color: var(--blatt-dunkel); text-wrap: balance; }
+h3 { font-family: var(--font-titel); margin: .2em 0 .5em; color: var(--text); }
+p.gross { font-size: 1.25rem; line-height: 1.45; }
 
 .knopf {
   border: none;
   border-radius: var(--rund);
-  background: var(--gruen);
+  background: var(--blatt);
   color: var(--weiss);
-  font: inherit;
-  font-weight: 700;
-  font-size: 1.35rem;
+  font-family: var(--font-titel);
+  font-weight: 600;
+  font-size: 1.4rem;
   padding: 20px 26px;
   min-height: var(--tap);
-  box-shadow: var(--schatten);
+  box-shadow: var(--schatten-knopf) var(--blatt-tief);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   transition: transform .08s ease, filter .1s ease;
+  text-shadow: 0 1px 0 rgba(0,0,0,.08);
 }
-.knopf:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
-.knopf.gross { width: 100%; font-size: 1.6rem; padding: 26px; }
-.knopf.zweit { background: var(--sand-tief); color: var(--braun); box-shadow: 0 6px 0 rgba(0,0,0,0.06); }
-.knopf.klein { font-size: 1rem; padding: 12px 18px; min-height: 52px; }
+.knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--blatt-tief); }
+.knopf:focus-visible { outline: 4px solid var(--sonne); outline-offset: 3px; }
+.knopf.gross { width: 100%; font-size: 1.7rem; padding: 28px; }
+.knopf.zweit { background: var(--weiss); color: var(--braun); box-shadow: 0 6px 0 #e7dcc7; }
+.knopf.zweit:active { box-shadow: 0 2px 0 #e7dcc7; }
+.knopf.klein { font-size: 1.05rem; padding: 12px 20px; min-height: 56px; }
+.knopf.sonne { background: var(--sonne); color: #5a4410; box-shadow: 0 6px 0 var(--sonne-tief); }
+.knopf.sonne:active { box-shadow: 0 2px 0 var(--sonne-tief); }
 
 .karte {
   background: var(--weiss);
   border-radius: var(--rund);
   padding: 22px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 26px rgba(47,107,73,.12);
+  border: 1px solid rgba(47,107,73,.06);
 }
 
 .zentriert { text-align: center; }
@@ -89,111 +112,165 @@ p.gross { font-size: 1.25rem; line-height: 1.4; }
 .reihe { display: flex; gap: 12px; flex-wrap: wrap; }
 .reihe.mitte { justify-content: center; align-items: center; }
 
+/* ---------- Nala (Maskottchen) + Sprechblase ---------- */
 .nala {
-  font-size: 4.5rem;
-  line-height: 1;
-  animation: wippen 2.5s ease-in-out infinite;
+  width: 128px; height: 128px; margin: 0 auto;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #fff 0%, #fbe9c4 62%, #f7c948 100%);
+  box-shadow: 0 10px 24px rgba(224,169,46,.35), inset 0 -6px 0 rgba(224,169,46,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4.6rem; line-height: 1;
+  animation: wippen 3s ease-in-out infinite;
 }
-@keyframes wippen { 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+@keyframes wippen { 0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-6px) rotate(3deg);} }
+
+.sprechblase {
+  position: relative;
+  background: var(--weiss);
+  border: 2px solid rgba(47,107,73,.10);
+  border-radius: 22px;
+  padding: 16px 20px;
+  font-size: 1.2rem;
+  color: var(--text);
+  box-shadow: 0 8px 20px rgba(47,107,73,.10);
+  max-width: 440px;
+  margin: 0 auto;
+  text-wrap: balance;
+}
+.sprechblase::after {
+  content: ""; position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  border: 12px solid transparent; border-bottom-color: var(--weiss);
+  filter: drop-shadow(0 -2px 0 rgba(47,107,73,.10));
+}
 
 .hinweis { color: var(--braun); font-size: 1rem; }
+.mini { font-size: .9rem; color: var(--braun); line-height: 1.4; }
 
-/* Startbildschirm Spielkacheln */
+/* ---------- Startbildschirm: Spielkacheln ---------- */
 .kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .kachel {
   background: var(--weiss);
-  border: 3px solid transparent;
   border-radius: var(--rund);
-  padding: 18px 10px;
+  padding: 20px 10px 16px;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(47,107,73,.10);
+  border: 1px solid rgba(47,107,73,.06);
+  font-family: var(--font-titel);
+  font-weight: 600;
+  transition: transform .1s ease;
 }
-.kachel .emoji { font-size: 2.6rem; display: block; margin-bottom: 6px; }
-.kachel:active { transform: translateY(2px); }
+.kachel .emoji {
+  font-size: 2.6rem; display: flex; align-items: center; justify-content: center;
+  width: 76px; height: 76px; margin: 0 auto 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #fff, #eef7f1);
+  box-shadow: inset 0 -4px 0 rgba(47,107,73,.06);
+}
+.kachel:active { transform: translateY(2px) scale(.98); }
 
-/* Fortschrittspunkte in der Session */
-.fortschritt { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
-.punkt { width: 16px; height: 16px; border-radius: 50%; background: var(--sand-tief); }
-.punkt.aktiv { background: var(--gruen-hell); }
-.punkt.fertig { background: var(--gruen); }
+/* ---------- Fortschrittspunkte ---------- */
+.fortschritt { display: flex; gap: 10px; justify-content: center; margin: 2px 0; }
+.punkt { width: 18px; height: 18px; border-radius: 50%; background: #e3ece6; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); transition: transform .15s ease, background .15s ease; }
+.punkt.aktiv { background: var(--blatt); transform: scale(1.15); }
+.punkt.fertig { background: var(--sonne); }
 
 /* ---------- Spielfläche ---------- */
 .spielfeld {
   position: relative;
   flex: 1;
-  min-height: 380px;
-  background: var(--sand-tief);
+  min-height: 360px;
+  background: linear-gradient(180deg, #f2f9f4, #eaf5ee);
   border-radius: var(--rund);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(47,107,73,.08);
 }
-.spiel-kopf { display: flex; justify-content: space-between; align-items: center; }
-.frage { font-size: 2rem; font-weight: 700; text-align: center; }
+.spiel-kopf { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.spiel-kopf h2 { font-size: 1.35rem; }
+.frage { font-family: var(--font-titel); font-size: 1.6rem; font-weight: 600; text-align: center; color: var(--text); }
 
-/* Rückmeldung */
+/* Rückmeldung mit Pop */
 .feedback {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 5rem; pointer-events: none; opacity: 0;
+  font-size: 5.5rem; pointer-events: none; opacity: 0; z-index: 5;
 }
-.feedback.zeig { animation: pop .6s ease; }
-@keyframes pop { 0%{opacity:0; transform:scale(.5);} 30%{opacity:1; transform:scale(1.1);} 100%{opacity:0; transform:scale(1);} }
+.feedback.zeig { animation: pop .7s ease; }
+@keyframes pop { 0%{opacity:0; transform:scale(.4) rotate(-8deg);} 30%{opacity:1; transform:scale(1.15) rotate(4deg);} 100%{opacity:0; transform:scale(1);} }
 
-/* Auswahl-Kacheln in Spielen (Emoji-Bilder, Zahlen) */
-.auswahl { display: grid; gap: 14px; width: 100%; padding: 12px; }
+/* Auswahl-Kacheln */
+.auswahl { display: grid; gap: 14px; width: 100%; padding: 14px; }
 .auswahl.zwei { grid-template-columns: 1fr 1fr; }
 .auswahl.drei { grid-template-columns: 1fr 1fr 1fr; }
 .wahl {
   background: var(--weiss);
-  border: 3px solid var(--sand-tief);
+  border: 3px solid #e6efe9;
   border-radius: var(--rund);
   min-height: var(--tap);
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-family: var(--font-titel);
+  font-size: 2.1rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
+  box-shadow: 0 5px 0 #e6efe9;
+  transition: transform .08s ease;
 }
-.wahl:active { transform: scale(.97); }
-.wahl.richtig { border-color: var(--gut); background: #eafaf0; }
-.wahl.falsch  { border-color: var(--achtung); background: #fdefe6; }
+.wahl:active { transform: translateY(3px); box-shadow: 0 2px 0 #e6efe9; }
+.wahl.richtig { border-color: var(--blatt); background: #e9faf0; box-shadow: 0 5px 0 var(--blatt); }
+.wahl.falsch  { border-color: var(--beere); background: #fdefe6; box-shadow: 0 5px 0 var(--beere); }
 
-/* Corsi / Finde-mich Raster */
-.raster { display: grid; gap: 10px; width: 100%; max-width: 340px; }
+/* Raster (Echo / Finde-mich) */
+.raster { display: grid; gap: 12px; width: 100%; max-width: 340px; }
 .zelle {
   aspect-ratio: 1;
   background: var(--weiss);
-  border-radius: 16px;
+  border-radius: 20px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.8rem; cursor: pointer;
-  border: 2px solid var(--sand);
+  font-size: 2rem; cursor: pointer;
+  border: 2px solid #e6efe9;
+  box-shadow: 0 4px 0 #e6efe9;
+  transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
 }
-.zelle.leuchtet { background: var(--gruen-hell); transform: scale(1.05); }
-.zelle.getippt { background: var(--gruen); }
+.zelle.leuchtet {
+  background: radial-gradient(circle at 50% 40%, #fff2c9, var(--sonne));
+  transform: scale(1.08);
+  box-shadow: 0 0 0 6px rgba(247,201,72,.35), 0 6px 0 var(--sonne-tief);
+  border-color: var(--sonne);
+}
+.zelle.getippt { background: #e9faf0; border-color: var(--blatt); box-shadow: 0 4px 0 var(--blatt); }
 
 /* Pilz-Stopp bewegliches Feld */
 .pilz {
   position: absolute;
-  font-size: 3.4rem;
+  font-size: 3.6rem;
   cursor: pointer;
   transition: transform .1s ease;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,.15));
 }
-.pilz:active { transform: scale(.9); }
+.pilz:active { transform: scale(.88); }
 
 /* Eltern-Bereich */
-.balken { background: var(--sand-tief); border-radius: 10px; height: 20px; overflow: hidden; }
-.balken > span { display:block; height:100%; background: var(--gruen-hell); }
-.zeile { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--sand-tief); }
-.pin-feld { font-size: 2.4rem; letter-spacing: .3em; text-align:center; }
-.pin-tasten { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:300px; margin:0 auto; }
+.balken { background: #e6efe9; border-radius: 10px; height: 22px; overflow: hidden; margin-bottom: 6px; }
+.balken > span { display:block; height:100%; background: linear-gradient(90deg, var(--blatt), var(--sonne)); border-radius: 10px; }
+.zeile { display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid #eef3ef; }
+.pin-feld { font-family: var(--font-titel); font-size: 2.6rem; letter-spacing: .3em; text-align:center; min-height: 3rem; color: var(--blatt-dunkel); }
+.pin-tasten { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:320px; margin:0 auto; }
 
 /* Album */
-.album { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-.abzeichen { aspect-ratio:1; background:var(--weiss); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:2.4rem; box-shadow:0 3px 8px rgba(0,0,0,.06); }
-.abzeichen.leer { opacity:.25; font-size:1.6rem; }
+.album { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.abzeichen {
+  aspect-ratio:1; border-radius:20px;
+  display:flex; align-items:center; justify-content:center; font-size:2.4rem;
+  background: radial-gradient(circle at 50% 38%, #fff, #eef7f1);
+  box-shadow:0 6px 14px rgba(47,107,73,.10);
+  border: 1px solid rgba(47,107,73,.06);
+}
+.abzeichen.leer { opacity:.3; font-size:1.4rem; box-shadow:none; background:#f0f5f1; }
 
-.mini { font-size:.9rem; color:var(--braun); }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

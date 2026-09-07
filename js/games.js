@@ -87,34 +87,75 @@ const Games = (() => {
   // 2) ECHO  (Corsi – visuell-räumliches Arbeitsgedächtnis)
   // ================================================================
   function echo(feld, level, fertig) {
-    Audio.sprich('Schau gut zu. Tippe die Felder in der gleichen Reihenfolge.');
+    Audio.sprich('Schau gut zu. Tippe die Felder dann in der gleichen Reihenfolge.');
     feld.innerHTML = '';
-    const info = el('p', 'frage', 'Merke dir die Reihenfolge');
+    const info = el('p', 'frage', 'Merke dir die Reihenfolge 👀');
+    const punkte = el('div', 'fortschritt'); // zeigt, wie viele Felder schon getippt sind
     const wrap = el('div', 'spielfeld');
     const raster = el('div', 'raster'); raster.style.gridTemplateColumns = 'repeat(3,1fr)';
     wrap.appendChild(raster);
-    feld.append(info, wrap);
+    const nochmal = el('button', 'knopf zweit klein', '🔁 Nochmal zeigen');
+    feld.append(info, punkte, wrap, nochmal);
 
     const zellen = [];
     for (let k = 0; k < 9; k++) { const z = el('div', 'zelle'); zellen.push(z); raster.appendChild(z); }
 
     const runden = 5;
+    const maxLen = 7;                       // passt auf das 3x3-Raster (max 9 Felder)
     let runde = 0, correct = 0;
     let laenge = 2 + Math.floor(level / 2); // Folge wird länger mit Level
+    let folge = [], pos = 0, busy = false, zeigtGerade = false;
 
-    async function zeigen(folge) {
-      raster.style.pointerEvents = 'none';
-      info.textContent = 'Schau zu …';
-      await warte(500);
-      for (const idx of folge) {
-        zellen[idx].classList.add('leuchtet'); Audio.tipp();
-        await warte(520);
-        zellen[idx].classList.remove('leuchtet');
-        await warte(180);
-      }
-      info.textContent = 'Jetzt du!';
-      raster.style.pointerEvents = 'auto';
+    // Eindeutige Felder (kein Feld doppelt) – klar und nicht verwirrend
+    function neueFolge(n) { return misch([0,1,2,3,4,5,6,7,8]).slice(0, Math.min(n, 9)); }
+
+    function punkteZeichnen() {
+      punkte.innerHTML = '';
+      folge.forEach((_, i) => {
+        const p = el('div', 'punkt');
+        if (i < pos) p.classList.add('fertig');
+        punkte.appendChild(p);
+      });
     }
+
+    async function zeigen() {
+      zeigtGerade = true;
+      raster.style.pointerEvents = 'none';
+      nochmal.disabled = true; nochmal.style.opacity = '.4';
+      info.textContent = 'Schau gut zu …';
+      pos = 0; punkteZeichnen();
+      await warte(500);
+      for (let i = 0; i < folge.length; i++) {
+        const z = zellen[folge[i]];
+        z.classList.add('leuchtet'); Audio.tipp(1 + i * 0.08); // Tonhöhe steigt Schritt für Schritt
+        await warte(560);
+        z.classList.remove('leuchtet');
+        await warte(220);
+      }
+      info.textContent = 'Jetzt du! 👆';
+      raster.style.pointerEvents = 'auto';
+      nochmal.disabled = false; nochmal.style.opacity = '1';
+      zeigtGerade = false; busy = false;
+    }
+
+    function tippe(idx, z) {
+      if (busy || zeigtGerade) return;
+      if (idx === folge[pos]) {
+        z.classList.add('getippt'); Audio.tipp(1 + pos * 0.08);
+        setTimeout(() => z.classList.remove('getippt'), 260);
+        pos++; punkteZeichnen();
+        if (pos === folge.length) {          // Folge komplett richtig
+          busy = true; correct++; feedback(wrap, true);
+          setTimeout(() => { laenge = Math.min(maxLen, laenge + 1); naechsteRunde(); }, 800);
+        }
+      } else {                                // falsches Feld – sanft, ohne Drama
+        busy = true; feedback(wrap, false);
+        setTimeout(() => { laenge = Math.max(2, laenge - 1); naechsteRunde(); }, 800);
+      }
+    }
+
+    zellen.forEach((z, idx) => z.addEventListener('pointerdown', () => tippe(idx, z)));
+    nochmal.addEventListener('pointerdown', () => { if (!zeigtGerade) zeigen(); });
 
     function naechsteRunde() {
       if (runde >= runden) {
@@ -123,26 +164,9 @@ const Games = (() => {
         return;
       }
       runde++;
-      const folge = [];
-      while (folge.length < laenge) { const c = zufall(0, 8); if (folge[folge.length-1] !== c) folge.push(c); }
-      let pos = 0;
-      const handler = [];
-      zellen.forEach((z, idx) => {
-        const h = () => {
-          z.classList.add('getippt'); Audio.tipp();
-          setTimeout(() => z.classList.remove('getippt'), 250);
-          if (idx === folge[pos]) {
-            pos++;
-            if (pos === folge.length) { correct++; feedback(wrap, true); aufraeumen(); setTimeout(() => { laenge = Math.min(6, laenge+1); naechsteRunde(); }, 700); }
-          } else {
-            feedback(wrap, false); aufraeumen();
-            setTimeout(() => { laenge = Math.max(2, laenge-1); naechsteRunde(); }, 700);
-          }
-        };
-        z.addEventListener('pointerdown', h); handler.push(h);
-      });
-      function aufraeumen() { zellen.forEach((z,idx) => z.removeEventListener('pointerdown', handler[idx])); }
-      zeigen(folge);
+      folge = neueFolge(laenge);
+      pos = 0; busy = true;
+      zeigen();
     }
     naechsteRunde();
   }

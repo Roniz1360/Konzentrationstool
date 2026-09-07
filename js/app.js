@@ -6,6 +6,16 @@
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const daten = () => Store.get();
 
+  // Nala mit Sprechblase – freundlich, liest den Text auch vor
+  function nalaSagt(text, emoji = '🐿️', vorlesen = true) {
+    const box = el('div', 'zentriert');
+    box.style.display = 'flex'; box.style.flexDirection = 'column'; box.style.gap = '14px'; box.style.alignItems = 'center';
+    box.append(el('div', 'nala', emoji));
+    box.append(el('div', 'sprechblase', text));
+    if (vorlesen) Audio.sprich(text);
+    return box;
+  }
+
   // Audio-Einstellungen aus Speicher laden
   Audio.setTon(daten().tonAn);
   Audio.setSprache(daten().spracheAn);
@@ -18,12 +28,9 @@
   function start() {
     leeren();
     const s = el('div', 'screen');
-    const kopf = el('div', 'zentriert');
-    kopf.append(el('div', 'nala', '🐿️'));
-    kopf.append(el('h1', null, 'Nalas Waldschule'));
-    const gruss = daten().spitzname ? `Hallo ${daten().spitzname}!` : 'Schön, dass du da bist!';
-    kopf.append(el('p', 'gross', gruss));
-    s.append(kopf);
+    s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
+    const gruss = daten().spitzname ? `Hallo ${daten().spitzname}! Schön, dass du da bist. 🌰` : 'Hallo! Schön, dass du da bist. 🌰';
+    s.append(nalaSagt(gruss, '🐿️', false)); // beim Laden nicht vorlesen (Browser blockt Ton ohne Tipp)
 
     const losKnopf = el('button', 'knopf gross', '▶  Heute üben');
     losKnopf.addEventListener('pointerdown', () => { Audio.tipp(); sessionStarten(); });
@@ -76,13 +83,12 @@
     // Begrüssung durch Nala
     leeren();
     const intro = el('div', 'screen zentriert');
-    intro.append(el('div', 'nala', '🐿️'));
-    intro.append(el('h2', null, 'Bereit? Los geht\'s!'));
-    intro.append(el('p', 'gross', `Heute üben wir ${spiele.length} Spiele.`));
+    intro.append(el('div', 'spacer'));
+    intro.append(nalaSagt(`Schön, dass du übst! Heute spielen wir ${spiele.length} Spiele zusammen.`, '🐿️'));
+    intro.append(el('div', 'spacer'));
     app.append(intro);
-    Audio.sprich('Bereit? Los geht\'s!');
 
-    setTimeout(naechstesSpiel, 1600);
+    setTimeout(naechstesSpiel, 2200);
 
     function naechstesSpiel() {
       if (idx >= spiele.length) { abschluss(); return; }
@@ -124,15 +130,12 @@
       leeren();
       const s = el('div', 'screen zentriert');
       s.append(el('div', 'spacer'));
-      s.append(el('div', 'nala', '🐿️'));
-      s.append(el('h2', null, 'Super gemacht!'));
-      s.append(el('p', 'gross', 'Weiter zum nächsten Spiel.'));
-      const k = el('button', 'knopf gross', 'Weiter ▶');
+      s.append(nalaSagt(Audio.lob() + ' Kommst du mit zum nächsten Spiel?', '🐿️'));
+      const k = el('button', 'knopf gross sonne', 'Weiter ▶');
       k.addEventListener('pointerdown', () => { Audio.tipp(); weiter(); });
       s.append(k);
       s.append(el('div', 'spacer'));
       app.append(s);
-      Audio.sprich('Super gemacht!');
     }
 
     function abschluss() {
@@ -140,17 +143,15 @@
       Store.sessionSpeichern(sek, spiele, bereichspunkte);
       const sticker = Store.abzeichenGeben();
       Audio.jubel();
-      Audio.sprich('Du hast heute geübt. Das war toll!');
 
       leeren();
       const s = el('div', 'screen zentriert');
       s.append(el('div', 'spacer'));
-      s.append(el('div', 'nala', '🎉'));
-      s.append(el('h1', null, 'Fertig für heute!'));
-      s.append(el('p', 'gross', 'Du hast drangeblieben – super!'));
+      s.append(nalaSagt('Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
       const card = el('div', 'karte zentriert');
-      card.append(el('p', 'hinweis', 'Dein neues Abzeichen:'));
-      const st = el('div', null, sticker); st.style.fontSize = '4rem';
+      card.append(el('p', 'hinweis', 'Dein neues Abzeichen fürs Album:'));
+      const st = el('div', null, sticker); st.style.fontSize = '4.5rem';
+      st.style.animation = 'pop .8s ease';
       card.append(st);
       s.append(card);
       const fertig = el('button', 'knopf gross', '🏡 Zum Start');
@@ -187,8 +188,7 @@
       leeren();
       const e = el('div', 'screen zentriert');
       e.append(el('div', 'spacer'));
-      e.append(el('div', 'nala', '🐿️'));
-      e.append(el('h2', null, 'Gut geübt!'));
+      e.append(nalaSagt(Audio.lob(), '🐿️'));
       const k = el('button', 'knopf gross', '🏡 Zum Start');
       k.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
       e.append(k); e.append(el('div','spacer'));
