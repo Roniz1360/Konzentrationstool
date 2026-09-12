@@ -1,0 +1,9 @@
+# Android/Gradle Build-Reste – nicht ins Repo
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+.cxx/

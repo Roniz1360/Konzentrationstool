@@ -1,0 +1,44 @@
+name: Android-APK bauen
+
+# Baut die Debug-APK automatisch und stellt sie als Download bereit.
+# Manuell startbar (Actions-Tab -> "Run workflow") oder bei Push auf die App.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android/**'
+      - 'index.html'
+      - 'css/**'
+      - 'js/**'
+      - 'icons/**'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: JDK 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK einrichten
+        uses: android-actions/setup-android@v3
+
+      - name: Debug-APK bauen
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: APK als Download bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: NalasWaldschule-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
