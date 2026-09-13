@@ -271,6 +271,87 @@ p.gross { font-size: 1.25rem; line-height: 1.45; }
 }
 .abzeichen.leer { opacity:.3; font-size:1.4rem; box-shadow:none; background:#f0f5f1; }
 
+/* =====================================================================
+   PLASTISCHE TIEFE ("Knet-/Spielzeug"-Look) – dezent, ohne 3D-Engine.
+   Weiche Lichter oben, tiefe Schatten unten, leichtes Kippen beim Tippen.
+   Alles per CSS -> flüssig auch auf günstigen Geräten, offline.
+   ===================================================================== */
+
+/* Weiche Wald-Hügel als Szenentiefe unten */
+body {
+  background:
+    radial-gradient(120px 120px at 82% 92px, rgba(247,201,72,.55), rgba(247,201,72,0) 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='720' height='240' viewBox='0 0 720 240'><path d='M0 150 Q 180 90 360 150 T 720 150 V240 H0 Z' fill='%2352ab77' opacity='0.20'/><path d='M0 190 Q 200 130 420 185 T 720 175 V240 H0 Z' fill='%233f8a5f' opacity='0.20'/></svg>") bottom / 100% auto no-repeat,
+    linear-gradient(180deg, var(--himmel1) 0%, var(--himmel2) 46%, var(--sand) 100%);
+  background-attachment: fixed, fixed, fixed;
+}
+
+/* Knöpfe: gewölbt wirken (Licht oben, Rundung), Schatten am Boden */
+.knopf {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 42%, rgba(0,0,0,.06));
+  box-shadow: var(--schatten-knopf) var(--blatt-tief),
+              inset 0 3px 0 rgba(255,255,255,.35),
+              inset 0 -3px 6px rgba(0,0,0,.10),
+              0 12px 18px rgba(47,107,73,.18);
+}
+.knopf.zweit { box-shadow: 0 6px 0 #e7dcc7, inset 0 3px 0 rgba(255,255,255,.6), 0 10px 16px rgba(47,107,73,.10); }
+.knopf.sonne { box-shadow: 0 6px 0 var(--sonne-tief), inset 0 3px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.10), 0 12px 18px rgba(224,169,46,.28); }
+.knopf:active { box-shadow: 0 2px 0 var(--blatt-tief), inset 0 2px 4px rgba(0,0,0,.18); }
+
+/* Nala: rundes „Spielzeug" mit Boden-Schatten, der beim Hüpfen mitfedert */
+.nala { position: relative; }
+.nala::after {
+  content: ""; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+  width: 78px; height: 16px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(47,107,73,.28), rgba(47,107,73,0) 70%);
+  animation: schatten 3s ease-in-out infinite; z-index: -1;
+}
+@keyframes schatten { 0%,100%{ width:78px; opacity:.55; } 50%{ width:58px; opacity:.32; } }
+
+/* Kacheln: erhabene, glänzende Steine – kippen leicht beim Tippen */
+.kachel {
+  background-image: linear-gradient(180deg, #ffffff, #f2f8f4);
+  box-shadow: 0 10px 20px rgba(47,107,73,.14), inset 0 2px 0 rgba(255,255,255,.9), inset 0 -6px 10px rgba(47,107,73,.06);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.kachel:active {
+  transform: perspective(600px) translateY(3px) rotateX(9deg) scale(.985);
+  box-shadow: 0 5px 10px rgba(47,107,73,.16), inset 0 2px 0 rgba(255,255,255,.9);
+}
+.kachel .emoji {
+  box-shadow: inset 0 -5px 8px rgba(47,107,73,.10), inset 0 3px 4px rgba(255,255,255,.9), 0 4px 8px rgba(47,107,73,.10);
+}
+
+/* Karten: sanftes Oberlicht */
+.karte { background-image: linear-gradient(180deg, #ffffff, #fbfdfc); box-shadow: 0 12px 28px rgba(47,107,73,.13), inset 0 2px 0 rgba(255,255,255,.9); }
+
+/* Auswahl-Knöpfe: plastische Tasten mit Oberlicht */
+.wahl {
+  background-image: linear-gradient(180deg, #ffffff, #eef6f0);
+  box-shadow: 0 5px 0 #d9e6dd, inset 0 2px 0 rgba(255,255,255,.9), 0 9px 16px rgba(47,107,73,.10);
+  transition: transform .1s ease, box-shadow .1s ease;
+}
+.wahl:active { transform: perspective(600px) translateY(3px) rotateX(8deg); box-shadow: 0 2px 0 #d9e6dd, inset 0 2px 5px rgba(0,0,0,.10); }
+.wahl.richtig { box-shadow: 0 5px 0 var(--blatt), inset 0 2px 0 rgba(255,255,255,.7), 0 9px 18px rgba(82,171,119,.30); }
+.wahl.falsch  { box-shadow: 0 5px 0 var(--beere), inset 0 2px 0 rgba(255,255,255,.7), 0 9px 18px rgba(239,138,99,.28); }
+
+/* Raster-Felder: runde „Perlen" mit Glanzpunkt */
+.zelle {
+  background-image: radial-gradient(circle at 34% 28%, #ffffff, #eef5f0 62%);
+  box-shadow: 0 5px 0 #dbe8df, inset 0 2px 3px rgba(255,255,255,.9), inset 0 -4px 8px rgba(47,107,73,.08), 0 8px 14px rgba(47,107,73,.08);
+}
+.zelle.leuchtet {
+  background-image: radial-gradient(circle at 40% 32%, #fff6d6, var(--sonne) 78%);
+  box-shadow: 0 0 0 7px rgba(247,201,72,.30), 0 8px 0 var(--sonne-tief), 0 10px 22px rgba(224,169,46,.40), inset 0 3px 4px rgba(255,255,255,.7);
+}
+
+/* Abzeichen: glänzende Knöpfe */
+.abzeichen { box-shadow: 0 8px 16px rgba(47,107,73,.14), inset 0 2px 0 rgba(255,255,255,.9), inset 0 -5px 9px rgba(47,107,73,.08); }
+
+/* Spielfläche: leicht vertiefte Bühne */
+.spielfeld { box-shadow: inset 0 3px 10px rgba(47,107,73,.12), inset 0 -2px 6px rgba(255,255,255,.6); }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+  .nala::after { animation: none !important; }
 }
