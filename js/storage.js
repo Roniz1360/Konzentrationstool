@@ -9,6 +9,7 @@ const Store = (() => {
     pin: '1234',            // Eltern-PIN (Standard, im Eltern-Bereich änderbar)
     tonAn: true,
     spracheAn: true,
+    musikAn: true,
     level: {},              // pro Spiel-ID ein Schwierigkeitslevel (1..N)
     abzeichen: [],          // gesammelte Sticker (Emoji)
     sessions: [],           // Verlauf: {datum, sekunden, spiele:[id...]}

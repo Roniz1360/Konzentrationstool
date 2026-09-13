@@ -7,6 +7,7 @@ const DATEIEN = [
   './index.html',
   './css/style.css',
   './js/audio.js',
+  './js/music.js',
   './js/storage.js',
   './js/games.js',
   './js/app.js',

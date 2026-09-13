@@ -19,6 +19,7 @@
   // Audio-Einstellungen aus Speicher laden
   Audio.setTon(daten().tonAn);
   Audio.setSprache(daten().spracheAn);
+  Music.setEnabled(daten().musikAn);
 
   function leeren() { app.innerHTML = ''; Audio.stopp(); }
 
@@ -27,6 +28,7 @@
   // ============================================================
   function start() {
     leeren();
+    Music.play('menu');
     const s = el('div', 'screen');
     s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
     const gruss = daten().spitzname ? `Hallo ${daten().spitzname}! Schön, dass du da bist. 🌰` : 'Hallo! Schön, dass du da bist. 🌰';
@@ -82,6 +84,7 @@
 
     // Begrüssung durch Nala
     leeren();
+    Music.play('intro');
     const intro = el('div', 'screen zentriert');
     intro.append(el('div', 'spacer'));
     intro.append(nalaSagt(`Schön, dass du übst! Heute spielen wir ${spiele.length} Spiele zusammen.`, '🐿️'));
@@ -94,6 +97,7 @@
       if (idx >= spiele.length) { abschluss(); return; }
       const g = Games.byId(spiele[idx]);
       leeren();
+      Music.play('spiel');
       const s = el('div', 'screen');
 
       const kopf = el('div', 'spiel-kopf');
@@ -128,6 +132,7 @@
     function zwischenLob(weiter) {
       if (idx >= spiele.length) { weiter(); return; }
       leeren();
+      Music.play('intro');
       const s = el('div', 'screen zentriert');
       s.append(el('div', 'spacer'));
       s.append(nalaSagt(Audio.lob() + ' Kommst du mit zum nächsten Spiel?', '🐿️'));
@@ -143,6 +148,7 @@
       Store.sessionSpeichern(sek, spiele, bereichspunkte);
       const sticker = Store.abzeichenGeben();
       Audio.jubel();
+      Music.play('finale');
 
       leeren();
       const s = el('div', 'screen zentriert');
@@ -169,6 +175,7 @@
   function einzelspiel(id) {
     const g = Games.byId(id);
     leeren();
+    Music.play('spiel');
     const s = el('div', 'screen');
     const kopf = el('div', 'spiel-kopf');
     kopf.append(el('h2', null, `${g.emoji} ${g.name}`));
@@ -185,6 +192,7 @@
       Store.setLevel(id, ergebnis.newLevel);
       Store.sessionSpeichern(0, [id], { [ergebnis.bereich]: ergebnis.correct || 0 });
       Audio.jubel();
+      Music.play('finale');
       leeren();
       const e = el('div', 'screen zentriert');
       e.append(el('div', 'spacer'));
@@ -305,6 +313,7 @@
     // Ton / Sprache
     set.append(schalter('🔊 Töne', d.tonAn, (v)=>{ d.tonAn=v; Audio.setTon(v); Store.speichern(); }));
     set.append(schalter('🗣️ Vorlesen', d.spracheAn, (v)=>{ d.spracheAn=v; Audio.setSprache(v); Store.speichern(); }));
+    set.append(schalter('🎵 Musik', d.musikAn, (v)=>{ d.musikAn=v; Music.setEnabled(v); Store.speichern(); }));
     // PIN ändern
     const pinRow = el('div','reihe mitte');
     const pinInput = el('input'); pinInput.type='tel'; pinInput.maxLength=4; pinInput.placeholder='Neue PIN (4 Ziffern)';
