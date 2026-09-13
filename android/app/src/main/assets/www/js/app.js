@@ -24,15 +24,104 @@
   function leeren() { app.innerHTML = ''; Audio.stopp(); }
 
   // ============================================================
+  // LOGIN / PROFILE (einfach, lokal, ohne Server)
+  // ============================================================
+  function loginScreen() {
+    leeren();
+    Music.play('menu');
+    if (Store.profile().length === 0) { profilErstellenScreen(); return; }
+    const s = el('div', 'screen');
+    s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
+    s.append(el('div', 'sprechblase', 'Wer möchte heute üben?'));
+    const grid = el('div', 'kacheln');
+    Store.profile().forEach(p => {
+      const k = el('div', 'kachel');
+      k.append(el('span', 'emoji', p.avatar));
+      k.append(document.createTextNode(p.name));
+      k.append(el('div', 'mini', `⭐ ${p.punkte} · Stufe ${1 + Math.floor(p.punkte/200)}`));
+      k.addEventListener('pointerdown', () => { Audio.tipp(); Store.profilWaehlen(p.id); start(); });
+      grid.append(k);
+    });
+    s.append(grid);
+    const neu = el('button', 'knopf zweit', '➕ Neues Kind');
+    neu.addEventListener('pointerdown', () => { Audio.tipp(); profilErstellenScreen(); });
+    s.append(neu);
+    app.append(s);
+  }
+
+  function profilErstellenScreen() {
+    leeren();
+    Music.play('menu');
+    const s = el('div', 'screen');
+    s.append(el('h1', 'zentriert', 'Neues Kind'));
+    s.append(nalaSagt('Wie heisst du? Wähle ein Tier für dich.', '🐿️', false));
+
+    const nameInput = el('input');
+    nameInput.type = 'text'; nameInput.placeholder = 'Dein Name'; nameInput.maxLength = 20;
+    nameInput.style.cssText = 'width:100%;min-height:60px;font-size:1.3rem;text-align:center;padding:10px 14px;border-radius:18px;border:3px solid #e6efe9;font-family:var(--font-titel);';
+    s.append(nameInput);
+
+    let gewaehlt = Store.AVATARE[0];
+    const grid = el('div', 'album');
+    const zellen = [];
+    Store.AVATARE.forEach((av, i) => {
+      const a = el('div', 'abzeichen', av);
+      a.style.cursor = 'pointer';
+      if (i === 0) a.style.outline = '4px solid var(--blatt)';
+      a.addEventListener('pointerdown', () => {
+        Audio.tipp(); gewaehlt = av;
+        zellen.forEach(z => z.style.outline = 'none');
+        a.style.outline = '4px solid var(--blatt)';
+      });
+      zellen.push(a); grid.append(a);
+    });
+    s.append(grid);
+
+    const los = el('button', 'knopf gross', 'Los! ▶');
+    los.addEventListener('pointerdown', () => {
+      Audio.tipp();
+      const name = nameInput.value.trim() || 'Kind';
+      Store.profilErstellen(name, gewaehlt);
+      start();
+    });
+    s.append(los);
+
+    if (Store.profile().length > 0) {
+      const zurueck = el('button', 'knopf zweit klein', '✕ Zurück');
+      zurueck.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
+      s.append(zurueck);
+    }
+    app.append(s);
+  }
+
+  // Kopfzeile mit Profil, Punkten und Stufe
+  function profilKopf() {
+    const p = Store.aktivesProfil();
+    const box = el('div', 'karte');
+    box.style.cssText = 'display:flex;align-items:center;gap:14px;padding:14px 18px;';
+    const av = el('div', null, p ? p.avatar : '🐿️'); av.style.fontSize = '2.4rem';
+    const mitte = el('div'); mitte.style.flex = '1';
+    mitte.append(el('div', null, p ? p.name : 'Gast'));
+    mitte.append(el('div', 'mini', `⭐ ${Store.getPunkte()} Punkte · 🌟 Stufe ${Store.rang()}`));
+    const wechseln = el('button', 'knopf zweit klein', '🔄');
+    wechseln.title = 'Profil wechseln';
+    wechseln.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
+    box.append(av, mitte, wechseln);
+    return box;
+  }
+
+  // ============================================================
   // STARTBILDSCHIRM
   // ============================================================
   function start() {
     leeren();
     Music.play('menu');
+    const p = Store.aktivesProfil();
     const s = el('div', 'screen');
     s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
-    const gruss = daten().spitzname ? `Hallo ${daten().spitzname}! Schön, dass du da bist. 🌰` : 'Hallo! Schön, dass du da bist. 🌰';
-    s.append(nalaSagt(gruss, '🐿️', false)); // beim Laden nicht vorlesen (Browser blockt Ton ohne Tipp)
+    s.append(profilKopf());
+    const gruss = p ? `Hallo ${p.name}! Schön, dass du da bist. 🌰` : 'Hallo! Schön, dass du da bist. 🌰';
+    s.append(nalaSagt(gruss, p ? p.avatar : '🐿️', false)); // beim Laden nicht vorlesen (Browser blockt Ton ohne Tipp)
 
     const losKnopf = el('button', 'knopf gross', '▶  Heute üben');
     losKnopf.addEventListener('pointerdown', () => { Audio.tipp(); sessionStarten(); });
@@ -81,6 +170,7 @@
     const startZeit = Date.now();
     const bereichspunkte = {};
     let idx = 0;
+    let punkteSession = 0;
 
     // Begrüssung durch Nala
     leeren();
@@ -120,22 +210,26 @@
       s.append(feld);
       app.append(s);
 
-      const level = Store.getLevel(g.id);
+      const level = Store.startLevel(g.id); // Progression: nie leichter als der Fortschritts-Boden
       g.spielen(feld, level, (ergebnis) => {
         Store.setLevel(g.id, ergebnis.newLevel);
         bereichspunkte[ergebnis.bereich] = (bereichspunkte[ergebnis.bereich] || 0) + (ergebnis.correct || 0);
+        const gained = (ergebnis.correct || 0) * 10;
+        punkteSession += gained;
+        Store.punkteGeben(gained);
         idx++;
-        zwischenLob(naechstesSpiel);
+        zwischenLob(naechstesSpiel, gained);
       });
     }
 
-    function zwischenLob(weiter) {
+    function zwischenLob(weiter, gained) {
       if (idx >= spiele.length) { weiter(); return; }
       leeren();
       Music.play('intro');
       const s = el('div', 'screen zentriert');
       s.append(el('div', 'spacer'));
       s.append(nalaSagt(Audio.lob() + ' Kommst du mit zum nächsten Spiel?', '🐿️'));
+      if (gained) s.append(el('div', 'punkte-plus', `+${gained} ⭐`));
       const k = el('button', 'knopf gross sonne', 'Weiter ▶');
       k.addEventListener('pointerdown', () => { Audio.tipp(); weiter(); });
       s.append(k);
@@ -147,6 +241,8 @@
       const sek = Math.round((Date.now() - startZeit) / 1000);
       Store.sessionSpeichern(sek, spiele, bereichspunkte);
       const sticker = Store.abzeichenGeben();
+      const bonus = 50; punkteSession += bonus;
+      const pr = Store.punkteGeben(bonus); // enthält evtl. Stufenaufstieg
       Audio.jubel();
       Music.play('finale');
 
@@ -155,11 +251,16 @@
       s.append(el('div', 'spacer'));
       s.append(nalaSagt('Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
       const card = el('div', 'karte zentriert');
-      card.append(el('p', 'hinweis', 'Dein neues Abzeichen fürs Album:'));
-      const st = el('div', null, sticker); st.style.fontSize = '4.5rem';
+      card.append(el('p', 'hinweis', 'Heute gesammelt:'));
+      card.append(el('div', 'punkte-plus', `+${punkteSession} ⭐`));
+      card.append(el('p', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang}`));
+      if (pr.aufgestiegen) card.append(el('p', 'frage', `🎉 Neue Stufe ${pr.rang}!`));
+      card.append(el('p', 'hinweis', 'Neues Abzeichen fürs Album:'));
+      const st = el('div', null, sticker); st.style.fontSize = '4rem';
       st.style.animation = 'pop .8s ease';
       card.append(st);
       s.append(card);
+      if (pr.aufgestiegen) Audio.sprich('Super! Du hast eine neue Stufe erreicht!');
       const fertig = el('button', 'knopf gross', '🏡 Zum Start');
       fertig.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
       s.append(fertig);
@@ -187,16 +288,23 @@
     s.append(feld);
     app.append(s);
 
-    const level = Store.getLevel(id);
+    const level = Store.startLevel(id);
     g.spielen(feld, level, (ergebnis) => {
       Store.setLevel(id, ergebnis.newLevel);
       Store.sessionSpeichern(0, [id], { [ergebnis.bereich]: ergebnis.correct || 0 });
+      const gained = (ergebnis.correct || 0) * 10;
+      const pr = Store.punkteGeben(gained);
       Audio.jubel();
       Music.play('finale');
       leeren();
       const e = el('div', 'screen zentriert');
       e.append(el('div', 'spacer'));
       e.append(nalaSagt(Audio.lob(), '🐿️'));
+      const card = el('div', 'karte zentriert');
+      card.append(el('div', 'punkte-plus', `+${gained} ⭐`));
+      card.append(el('p', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang}`));
+      e.append(card);
+      if (pr.aufgestiegen) e.append(el('p', 'frage', `🎉 Neue Stufe ${pr.rang}!`));
       const k = el('button', 'knopf gross', '🏡 Zum Start');
       k.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
       e.append(k); e.append(el('div','spacer'));
@@ -216,12 +324,13 @@
     raus.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
     kopf.append(raus); s.append(kopf);
 
-    s.append(el('p', 'hinweis', `Du hast ${daten().abzeichen.length} Abzeichen gesammelt.`));
+    const prof = Store.aktivesProfil() || { abzeichen: [] };
+    s.append(el('p', 'hinweis', `Du hast ${prof.abzeichen.length} Abzeichen gesammelt. ⭐ ${Store.getPunkte()} Punkte · Stufe ${Store.rang()}`));
     const grid = el('div', 'album');
-    const total = Math.max(16, Math.ceil(daten().abzeichen.length / 8) * 8);
+    const total = Math.max(16, Math.ceil(prof.abzeichen.length / 8) * 8);
     for (let i = 0; i < total; i++) {
       const a = el('div', 'abzeichen');
-      if (daten().abzeichen[i]) a.textContent = daten().abzeichen[i];
+      if (prof.abzeichen[i]) a.textContent = prof.abzeichen[i];
       else { a.classList.add('leer'); a.textContent = '·'; }
       grid.append(a);
     }
@@ -263,6 +372,7 @@
   function elternBereich() {
     leeren();
     const d = daten();
+    const p = Store.aktivesProfil() || { name:'-', sessions:[], statsProBereich:{aufmerksamkeit:0,gedaechtnis:0,rechnen:0,lesen:0}, punkte:0 };
     const s = el('div', 'screen');
     const kopf = el('div', 'spiel-kopf');
     kopf.append(el('h2', null, '👪 Eltern-Bereich'));
@@ -270,15 +380,17 @@
     raus.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
     kopf.append(raus); s.append(kopf);
 
+    s.append(el('p', 'mini', `Aktives Profil: ${p.avatar || ''} ${p.name} · ⭐ ${p.punkte} Punkte · Stufe ${Store.rang()}`));
+
     // Trainingszeit
     const heute0 = new Date(); heute0.setHours(0,0,0,0);
-    const heuteSek = d.sessions.filter(x => x.datum >= heute0.getTime()).reduce((a,b)=>a+(b.sekunden||0),0);
-    const wocheSek = d.sessions.filter(x => x.datum >= Date.now()-7*864e5).reduce((a,b)=>a+(b.sekunden||0),0);
+    const heuteSek = p.sessions.filter(x => x.datum >= heute0.getTime()).reduce((a,b)=>a+(b.sekunden||0),0);
+    const wocheSek = p.sessions.filter(x => x.datum >= Date.now()-7*864e5).reduce((a,b)=>a+(b.sekunden||0),0);
     const info = el('div', 'karte');
     info.append(el('h3', null, '⏱️ Trainingszeit'));
     info.append(zeile('Heute', minText(heuteSek)));
     info.append(zeile('Diese Woche', minText(wocheSek)));
-    info.append(zeile('Sessions gesamt', String(d.sessions.length)));
+    info.append(zeile('Sessions gesamt', String(p.sessions.length)));
     s.append(info);
     s.append(el('p', 'mini', 'Richtwert (Pro Juventute): max. 60 Min./Tag Bildschirmzeit für 6–9 Jahre. Empfehlung: 10–15 Min., 3–4× pro Woche.'));
 
@@ -286,13 +398,31 @@
     const fort = el('div', 'karte');
     fort.append(el('h3', null, '📈 Geübt je Bereich'));
     const bez = { aufmerksamkeit:'Aufmerksamkeit', gedaechtnis:'Gedächtnis', rechnen:'Rechnen', lesen:'Lesen' };
-    const max = Math.max(1, ...Object.values(d.statsProBereich));
+    const max = Math.max(1, ...Object.values(p.statsProBereich));
     for (const b in bez) {
       fort.append(el('p', 'mini', bez[b]));
-      const bal = el('div', 'balken'); const sp = el('span'); sp.style.width = Math.round((d.statsProBereich[b]/max)*100)+'%'; bal.append(sp); fort.append(bal);
+      const bal = el('div', 'balken'); const sp = el('span'); sp.style.width = Math.round((p.statsProBereich[b]/max)*100)+'%'; bal.append(sp); fort.append(bal);
     }
-    fort.append(el('p', 'mini', 'Bewusst ohne Ranking und ohne Vergleich mit anderen Kindern.'));
+    fort.append(el('p', 'mini', 'Punkte und Stufe motivieren – bewusst ohne Vergleich mit anderen Kindern.'));
     s.append(fort);
+
+    // Profile verwalten
+    const prof = el('div', 'karte');
+    prof.append(el('h3', null, '👧 Profile'));
+    Store.profile().forEach(pr => {
+      const z = el('div', 'zeile');
+      const links = el('span', null, `${pr.avatar} ${pr.name}` + (pr.id === Store.aktivId() ? '  (aktiv)' : ''));
+      const rechts = el('div', 'reihe');
+      const w = el('button','knopf zweit klein','Wählen');
+      w.addEventListener('pointerdown', ()=>{ Store.profilWaehlen(pr.id); elternBereich(); });
+      const l = el('button','knopf zweit klein','🗑️');
+      l.addEventListener('pointerdown', ()=>{ if(window.confirm(`Profil "${pr.name}" mit allen Fortschritten löschen?`)){ Store.profilLoeschen(pr.id); if(!Store.aktivesProfil()){ loginScreen(); } else elternBereich(); } });
+      rechts.append(w, l); z.append(links, rechts); prof.append(z);
+    });
+    const neu = el('button','knopf zweit klein','➕ Neues Kind');
+    neu.addEventListener('pointerdown', ()=>{ Audio.tipp(); profilErstellenScreen(); });
+    prof.append(neu);
+    s.append(prof);
 
     // Schwierigkeitsstufen (Transparenz)
     const lvl = el('div', 'karte');
@@ -303,12 +433,12 @@
     // Einstellungen
     const set = el('div', 'karte');
     set.append(el('h3', null, '⚙️ Einstellungen'));
-    // Spitzname
+    // Name des aktiven Profils ändern
     const nameRow = el('div', 'reihe mitte');
-    const nameInput = el('input'); nameInput.type='text'; nameInput.placeholder='Spitzname (freiwillig)'; nameInput.value = d.spitzname;
-    nameInput.style.cssText='flex:1;min-height:52px;font-size:1.1rem;padding:8px 12px;border-radius:12px;border:2px solid var(--sand-tief);';
+    const nameInput = el('input'); nameInput.type='text'; nameInput.placeholder='Name des Kindes'; nameInput.value = p.name || '';
+    nameInput.style.cssText='flex:1;min-height:52px;font-size:1.1rem;padding:8px 12px;border-radius:12px;border:2px solid #e6efe9;';
     const nameBtn = el('button','knopf zweit klein','Speichern');
-    nameBtn.addEventListener('pointerdown', () => { d.spitzname = nameInput.value.trim().slice(0,20); Store.speichern(); nameBtn.textContent='✓'; });
+    nameBtn.addEventListener('pointerdown', () => { if (Store.aktivesProfil()) { Store.aktivesProfil().name = nameInput.value.trim().slice(0,20) || 'Kind'; Store.speichern(); nameBtn.textContent='✓'; } });
     nameRow.append(nameInput, nameBtn); set.append(nameRow);
     // Ton / Sprache
     set.append(schalter('🔊 Töne', d.tonAn, (v)=>{ d.tonAn=v; Audio.setTon(v); Store.speichern(); }));
@@ -321,9 +451,14 @@
     const pinBtn = el('button','knopf zweit klein','PIN setzen');
     pinBtn.addEventListener('pointerdown', () => { if(/^\d{4}$/.test(pinInput.value)){ d.pin=pinInput.value; Store.speichern(); pinBtn.textContent='✓'; pinInput.value=''; } else pinBtn.textContent='4 Ziffern!'; });
     pinRow.append(pinInput, pinBtn); set.append(pinRow);
-    // Reset
-    const resetBtn = el('button','knopf zweit klein','🗑️ Alle Daten löschen');
-    resetBtn.addEventListener('pointerdown', () => { if(window.confirm('Wirklich alle Fortschritte löschen?')){ Store.reset(); start(); } });
+    // Alle Daten löschen (alle Profile)
+    const resetBtn = el('button','knopf zweit klein','🗑️ Alle Profile & Daten löschen');
+    resetBtn.addEventListener('pointerdown', () => {
+      if(window.confirm('Wirklich ALLE Profile und Fortschritte löschen?')){
+        Store.profile().slice().forEach(pr => Store.profilLoeschen(pr.id));
+        loginScreen();
+      }
+    });
     set.append(resetBtn);
     s.append(set);
 
@@ -344,5 +479,6 @@
   // Stimmen für Sprachausgabe evtl. verzögert laden
   if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
 
-  start();
+  // Beim Start: Profil wählen/erstellen (einfaches Login), sonst direkt starten
+  if (Store.aktivesProfil()) start(); else loginScreen();
 })();
