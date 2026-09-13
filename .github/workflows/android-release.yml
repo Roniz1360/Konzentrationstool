@@ -1,0 +1,67 @@
+name: Play-Release (AAB) bauen
+
+# Baut das signierte App-Bundle (.aab) für Google Play.
+# Benötigt GitHub-Secrets (Repo -> Settings -> Secrets and variables -> Actions):
+#   KEYSTORE_BASE64   = Inhalt von upload-keystore.jks, base64-codiert
+#                       (erzeugen: base64 -w0 upload-keystore.jks)
+#   KEYSTORE_PASSWORD = Keystore-Passwort
+#   KEY_ALIAS         = upload
+#   KEY_PASSWORD      = Key-Passwort (meist gleich wie Keystore-Passwort)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: JDK 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK einrichten
+        uses: android-actions/setup-android@v3
+
+      - name: Keystore und Signatur-Konfig herstellen
+        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret KEYSTORE_BASE64 fehlt – bitte Secrets setzen (siehe Kommentar oben)."
+            exit 1
+          fi
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/upload-keystore.jks
+          {
+            echo "storeFile=keystore/upload-keystore.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Signiertes AAB bauen
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+
+      - name: Aufräumen (Geheimnisse entfernen)
+        if: always()
+        working-directory: android
+        run: rm -f keystore/upload-keystore.jks keystore.properties
+
+      - name: AAB als Download bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: NalasWaldschule-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

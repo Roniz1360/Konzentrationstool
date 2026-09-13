@@ -1,8 +1,11 @@
 package ch.waldschule.nala;
 
 import android.app.Activity;
+import android.graphics.Insets;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -42,6 +45,25 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false); // Töne dürfen starten
         web.setWebViewClient(new WebViewClient());
         web.addJavascriptInterface(new TTSBridge(), "AndroidTTS");
+        web.setBackgroundColor(0xFFEAF7EF); // Himmel-Ton, passend zum App-Hintergrund
+
+        // Android 15 (targetSdk 35) zeigt Rand-zu-Rand: Inhalt nicht unter
+        // Status-/Navigationsleiste schieben -> passenden Abstand setzen.
+        web.setOnApplyWindowInsetsListener((v, insets) -> {
+            int left, top, right, bottom;
+            if (Build.VERSION.SDK_INT >= 30) {
+                Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                left = bars.left; top = bars.top; right = bars.right; bottom = bars.bottom;
+            } else {
+                left = insets.getSystemWindowInsetLeft();
+                top = insets.getSystemWindowInsetTop();
+                right = insets.getSystemWindowInsetRight();
+                bottom = insets.getSystemWindowInsetBottom();
+            }
+            v.setPadding(left, top, right, bottom);
+            return insets;
+        });
+
         setContentView(web);
 
         web.loadUrl("file:///android_asset/www/index.html");

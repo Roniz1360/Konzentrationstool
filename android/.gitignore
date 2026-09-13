@@ -7,3 +7,9 @@ local.properties
 .idea/
 captures/
 .cxx/
+
+# Signatur-Geheimnisse – niemals committen!
+keystore.properties
+keystore/
+*.jks
+*.keystore
