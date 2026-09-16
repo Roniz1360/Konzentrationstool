@@ -1,0 +1,38 @@
+# XcodeGen-Projektbeschreibung -> erzeugt NalasWaldschule.xcodeproj
+# Auf einem Mac:  brew install xcodegen  &&  cd ios  &&  xcodegen generate
+name: NalasWaldschule
+options:
+  bundleIdPrefix: ch.waldschule
+  deploymentTarget:
+    iOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Für einen signierten Gerätebuild hier die eigene Apple Team-ID eintragen:
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  NalasWaldschule:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: App
+        excludes:
+          - "Info.plist"
+          - "www"
+      - path: App/www
+        type: folder
+    settings:
+      base:
+        PRODUCT_NAME: NalasWaldschule
+        PRODUCT_BUNDLE_IDENTIFIER: ch.waldschule.nala
+        INFOPLIST_FILE: App/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO

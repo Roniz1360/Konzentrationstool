@@ -1,0 +1,34 @@
+name: iOS-App bauen (Prüfbuild)
+
+# Baut die App auf einem macOS-Runner OHNE Signatur (Simulator), um zu prüfen,
+# dass alles kompiliert. Für eine echte Geräte-/App-Store-App braucht es einen
+# Apple-Entwickler-Account (Signatur) – siehe ios/README.md.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: XcodeGen installieren
+        run: brew install xcodegen
+
+      - name: Xcode-Projekt erzeugen
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Prüfbuild (Simulator, ohne Signatur)
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -project NalasWaldschule.xcodeproj \
+            -scheme NalasWaldschule \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

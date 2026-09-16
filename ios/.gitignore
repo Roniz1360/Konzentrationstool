@@ -1,0 +1,6 @@
+# Xcode / XcodeGen erzeugte Dateien
+*.xcodeproj/
+DerivedData/
+build/
+*.xcuserstate
+.DS_Store
