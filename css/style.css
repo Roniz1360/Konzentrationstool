@@ -1,364 +1,292 @@
-/* Nalas Waldschule – warmes, freundliches, kindgerechtes Design.
-   Sonniger Wald, weiche runde Formen, grosse Buttons, fehlerfreundlich.
-   Bewusst EIN heller, freundlicher Look (kein Dark Mode). */
+/* Nalas Waldschule – Designsystem nach Mobile-UI-Prinzipien.
+   8-pt-Raster · max. 4 Schriftgrössen/2 Familien · 60/30/10-Farben ·
+   getönte weiche Schatten · Daumenzone-Navigation · ruhig & kindgerecht. */
 
 :root {
-  /* Farben: sonniger Wald */
-  --himmel1: #eaf7ef;
-  --himmel2: #d7eede;
-  --sand:    #f8f4ea;
-  --blatt:      #52ab77;
-  --blatt-dunkel: #3f8a5f;
-  --blatt-tief:   #2f6b49;
-  --sonne:  #f7c948;
-  --sonne-tief: #e0a92e;
-  --beere:  #ef8a63;
-  --himbeer:#e46a8b;
-  --weiss:  #ffffff;
-  --text:   #33413a;
-  --braun:  #8a6b4a;
-
-  --schatten-knopf: 0 6px 0;
-  --rund: 26px;
-  --tap: 88px;
-
-  --font-titel: "Fredoka", "Baloo 2", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
-  --font-text:  "Nunito", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  /* 60 % neutrale Basis */
+  --bg:        #f6f3ea;
+  --bg-top:    #eaf6ef;
+  --card:      #ffffff;
+  /* 30 % Komplement (Text) – Hierarchie über Deckkraft */
+  --ink:       #2c3a31;
+  --ink-70:    rgba(44,58,49,.70);
+  --ink-55:    rgba(44,58,49,.55);
+  /* 10 % Akzent (nur CTAs & Schlüsselstellen) */
+  --accent:    #3f8a5f;
+  --accent-ink:#2f6b49;
+  --accent-08: rgba(63,138,95,.08);
+  --accent-15: rgba(63,138,95,.15);
+  /* Belohnungsfarbe – sparsam (Punkte, Sterne, Erfolg) */
+  --sun:       #f7c948;
+  --sun-ink:   #a9781a;
+  --danger:    #e2725b;
+  /* Kategorie-Töne (Spielarten) */
+  --k-auf:#4a7fe0; --k-auf-bg:#eaf1fb;
+  --k-ged:#7c6cd8; --k-ged-bg:#f0edfb;
+  --k-rech:#3f8a5f; --k-rech-bg:#e7f6ed;
+  --k-les:#e0894a; --k-les-bg:#fdf0e5;
+  /* Getönte, weiche Schatten */
+  --sh-sm: 0 2px 8px rgba(47,107,73,.08);
+  --sh-md: 0 10px 22px rgba(47,107,73,.10);
+  --sh-lg: 0 18px 38px rgba(47,107,73,.14);
+  /* Radien */
+  --r-lg: 28px; --r-md: 20px; --r-sm: 14px; --r-pill: 999px;
+  /* 8-pt-Abstände */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px;
+  /* Typo: genau 4 Grössen */
+  --fs-xl: 2rem;
+  --fs-lg: 1.375rem;
+  --fs-md: 1.0625rem;
+  --fs-sm: .875rem;
+  --font-display: "Fredoka", "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+  --font-body:    "Nunito", "Comic Sans MS", system-ui, sans-serif;
+  --tap: 56px;
+  --tabbar-h: 76px;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  margin: 0;
-  min-height: 100%;
-  color: var(--text);
-  font-family: var(--font-text);
-  font-size: 20px;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+  margin: 0; min-height: 100%;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px; line-height: 1.45;
+  user-select: none; -webkit-user-select: none; touch-action: manipulation;
 }
 body {
-  /* Sonne oben rechts + weiche Hügel unten */
   background:
-    radial-gradient(120px 120px at 82% 92px, rgba(247,201,72,.55), rgba(247,201,72,0) 70%),
-    radial-gradient(140% 120px at 50% 100%, rgba(82,171,119,.30), rgba(82,171,119,0) 70%),
-    linear-gradient(180deg, var(--himmel1) 0%, var(--himmel2) 46%, var(--sand) 100%);
+    radial-gradient(140px 140px at 88% 84px, rgba(247,201,72,.30), rgba(247,201,72,0) 70%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 42%, var(--bg) 100%);
   background-attachment: fixed;
 }
 
 #app {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: max(18px, env(safe-area-inset-top)) 18px 26px;
-  max-width: 720px;
-  margin: 0 auto;
+  display: flex; flex-direction: column;
+  padding: max(var(--s6), env(safe-area-inset-top)) var(--s4) var(--s6);
+  max-width: 480px; margin: 0 auto;
 }
 
-/* ---------- Bausteine ---------- */
-.screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  animation: auf .3s ease both;
-}
-@keyframes auf { from { opacity: 0; transform: translateY(10px);} to {opacity:1; transform:none;} }
-
-h1 { font-family: var(--font-titel); font-size: 2.15rem; margin: .15em 0; color: var(--blatt-dunkel); text-wrap: balance; letter-spacing: .5px; }
-h2 { font-family: var(--font-titel); font-size: 1.6rem; margin: .1em 0; color: var(--blatt-dunkel); text-wrap: balance; }
-h3 { font-family: var(--font-titel); margin: .2em 0 .5em; color: var(--text); }
-p.gross { font-size: 1.25rem; line-height: 1.45; }
-
-.knopf {
-  border: none;
-  border-radius: var(--rund);
-  background: var(--blatt);
-  color: var(--weiss);
-  font-family: var(--font-titel);
-  font-weight: 600;
-  font-size: 1.4rem;
-  padding: 20px 26px;
-  min-height: var(--tap);
-  box-shadow: var(--schatten-knopf) var(--blatt-tief);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  transition: transform .08s ease, filter .1s ease;
-  text-shadow: 0 1px 0 rgba(0,0,0,.08);
-}
-.knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--blatt-tief); }
-.knopf:focus-visible { outline: 4px solid var(--sonne); outline-offset: 3px; }
-.knopf.gross { width: 100%; font-size: 1.7rem; padding: 28px; }
-.knopf.zweit { background: var(--weiss); color: var(--braun); box-shadow: 0 6px 0 #e7dcc7; }
-.knopf.zweit:active { box-shadow: 0 2px 0 #e7dcc7; }
-.knopf.klein { font-size: 1.05rem; padding: 12px 20px; min-height: 56px; }
-.knopf.sonne { background: var(--sonne); color: #5a4410; box-shadow: 0 6px 0 var(--sonne-tief); }
-.knopf.sonne:active { box-shadow: 0 2px 0 var(--sonne-tief); }
-
-.karte {
-  background: var(--weiss);
-  border-radius: var(--rund);
-  padding: 22px;
-  box-shadow: 0 10px 26px rgba(47,107,73,.12);
-  border: 1px solid rgba(47,107,73,.06);
-}
+/* ---------- Struktur ---------- */
+.screen { flex: 1; display: flex; flex-direction: column; gap: var(--s4); animation: rein .28s ease both; }
+.screen.hat-tabbar { padding-bottom: calc(var(--tabbar-h) + var(--s6)); }
+@keyframes rein { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none; } }
 
 .zentriert { text-align: center; }
 .spacer { flex: 1; }
-.reihe { display: flex; gap: 12px; flex-wrap: wrap; }
+.reihe { display: flex; gap: var(--s3); flex-wrap: wrap; }
 .reihe.mitte { justify-content: center; align-items: center; }
 
-/* ---------- Nala (Maskottchen) + Sprechblase ---------- */
-.nala {
-  width: 128px; height: 128px; margin: 0 auto;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, #fff 0%, #fbe9c4 62%, #f7c948 100%);
-  box-shadow: 0 10px 24px rgba(224,169,46,.35), inset 0 -6px 0 rgba(224,169,46,.25);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 4.6rem; line-height: 1;
-  animation: wippen 3s ease-in-out infinite;
+/* ---------- Typografie ---------- */
+h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); line-height: 1.1; margin: 0; color: var(--accent-ink); text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); margin: 0; color: var(--ink); text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); margin: 0 0 var(--s2); color: var(--ink); }
+p  { margin: 0; }
+p.gross  { font-size: var(--fs-md); color: var(--ink-70); }
+.hinweis { font-size: var(--fs-sm); color: var(--ink-55); }
+.mini    { font-size: var(--fs-sm); color: var(--ink-55); line-height: 1.4; }
+.label   { font-size: var(--fs-sm); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-55); font-weight: 700; }
+
+/* ---------- Karten ---------- */
+.karte {
+  background: var(--card); border-radius: var(--r-lg);
+  padding: var(--s6); box-shadow: var(--sh-md);
 }
-@keyframes wippen { 0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-6px) rotate(3deg);} }
+
+/* ---------- Knöpfe ---------- */
+.knopf {
+  border: none; border-radius: var(--r-md);
+  background: var(--accent); color: #fff;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md);
+  padding: var(--s4) var(--s6); min-height: var(--tap);
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  box-shadow: 0 6px 0 var(--accent-ink), var(--sh-sm), inset 0 2px 0 rgba(255,255,255,.28);
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.knopf:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--accent-ink), inset 0 2px 4px rgba(0,0,0,.14); }
+.knopf:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+.knopf.gross { width: 100%; font-size: var(--fs-lg); padding: var(--s6); min-height: 68px; border-radius: var(--r-lg); }
+.knopf.zweit { background: var(--accent-08); color: var(--accent-ink); box-shadow: 0 2px 0 var(--accent-15), inset 0 0 0 1.5px var(--accent-15); }
+.knopf.zweit:active { transform: translateY(2px); box-shadow: none; }
+.knopf.klein { font-size: var(--fs-sm); padding: var(--s2) var(--s4); min-height: 44px; }
+.knopf.sonne { background: var(--sun); color: var(--sun-ink); box-shadow: 0 6px 0 var(--sun-ink), inset 0 2px 0 rgba(255,255,255,.4); }
+.knopf.sonne:active { box-shadow: 0 3px 0 var(--sun-ink); }
+
+/* ---------- Nala + Sprechblase ---------- */
+.nala {
+  width: 104px; height: 104px; margin: 0 auto; position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #fff 0%, #fbe9c4 60%, #f7c948 100%);
+  box-shadow: var(--sh-md), inset 0 -5px 0 rgba(169,120,26,.22);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.6rem; line-height: 1;
+  animation: wippen 3.2s ease-in-out infinite;
+}
+@keyframes wippen { 0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-5px) rotate(3deg);} }
+.nala::after {
+  content:""; position:absolute; left:50%; bottom:-12px; transform:translateX(-50%);
+  width:64px; height:12px; border-radius:50%;
+  background: radial-gradient(ellipse, rgba(47,107,73,.22), rgba(47,107,73,0) 70%);
+  animation: schatten 3.2s ease-in-out infinite; z-index:-1;
+}
+@keyframes schatten { 0%,100%{width:64px;opacity:.5;} 50%{width:48px;opacity:.3;} }
 
 .sprechblase {
-  position: relative;
-  background: var(--weiss);
-  border: 2px solid rgba(47,107,73,.10);
-  border-radius: 22px;
-  padding: 16px 20px;
-  font-size: 1.2rem;
-  color: var(--text);
-  box-shadow: 0 8px 20px rgba(47,107,73,.10);
-  max-width: 440px;
-  margin: 0 auto;
-  text-wrap: balance;
+  position: relative; background: var(--card);
+  border-radius: var(--r-md); padding: var(--s4) var(--s6);
+  font-size: var(--fs-md); color: var(--ink); box-shadow: var(--sh-sm);
+  max-width: 400px; margin: 0 auto; text-wrap: balance;
 }
 .sprechblase::after {
-  content: ""; position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-  border: 12px solid transparent; border-bottom-color: var(--weiss);
-  filter: drop-shadow(0 -2px 0 rgba(47,107,73,.10));
+  content:""; position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+  border:11px solid transparent; border-bottom-color: var(--card);
 }
 
-.hinweis { color: var(--braun); font-size: 1rem; }
-.mini { font-size: .9rem; color: var(--braun); line-height: 1.4; }
-
-/* Punkte-Gewinn-Anzeige */
-.punkte-plus {
-  font-family: var(--font-titel); font-weight: 700; font-size: 2.4rem;
-  color: var(--sonne-tief); text-shadow: 0 2px 0 rgba(255,255,255,.6);
-  animation: pop .8s ease;
+/* ---------- Hero-Kopf (Profil + Punkte) ---------- */
+.hero { display: flex; align-items: center; gap: var(--s4); padding: var(--s4) var(--s4); }
+.avatar-ring { position: relative; width: 76px; height: 76px; flex: none; }
+.avatar-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.avatar-ring .gesicht {
+  position: absolute; inset: 8px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #fff, #eef7f1);
+  display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
+  box-shadow: inset 0 -4px 8px rgba(47,107,73,.08);
 }
-
-/* ---------- Startbildschirm: Spielkacheln ---------- */
-.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.kachel {
-  background: var(--weiss);
-  border-radius: var(--rund);
-  padding: 20px 10px 16px;
-  text-align: center;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(47,107,73,.10);
-  border: 1px solid rgba(47,107,73,.06);
-  font-family: var(--font-titel);
-  font-weight: 600;
-  transition: transform .1s ease;
+.avatar-ring .stufe-badge {
+  position: absolute; right: -2px; bottom: -2px; min-width: 24px; height: 24px; padding: 0 6px;
+  border-radius: var(--r-pill); background: var(--sun); color: var(--sun-ink);
+  font-family: var(--font-display); font-weight: 700; font-size: .8rem;
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--sh-sm);
 }
-.kachel .emoji {
-  font-size: 2.6rem; display: flex; align-items: center; justify-content: center;
-  width: 76px; height: 76px; margin: 0 auto 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 40%, #fff, #eef7f1);
-  box-shadow: inset 0 -4px 0 rgba(47,107,73,.06);
-}
-.kachel:active { transform: translateY(2px) scale(.98); }
-
-/* ---------- Fortschrittspunkte ---------- */
-.fortschritt { display: flex; gap: 10px; justify-content: center; margin: 2px 0; }
-.punkt { width: 18px; height: 18px; border-radius: 50%; background: #e3ece6; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); transition: transform .15s ease, background .15s ease; }
-.punkt.aktiv { background: var(--blatt); transform: scale(1.15); }
-.punkt.fertig { background: var(--sonne); }
-
-/* ---------- Spielfläche ---------- */
-.spielfeld {
-  position: relative;
-  flex: 1;
-  min-height: 360px;
-  background: linear-gradient(180deg, #f2f9f4, #eaf5ee);
-  border-radius: var(--rund);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: inset 0 2px 8px rgba(47,107,73,.08);
-}
-.spiel-kopf { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.spiel-kopf h2 { font-size: 1.35rem; }
-.frage { font-family: var(--font-titel); font-size: 1.6rem; font-weight: 600; text-align: center; color: var(--text); }
-
-/* Rückmeldung mit Pop */
-.feedback {
-  position: absolute; inset: 0;
+.hero .info { flex: 1; min-width: 0; }
+.hero .name { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); color: var(--ink); }
+.hero .punkte-stat { display: flex; align-items: baseline; gap: var(--s2); margin-top: 2px; }
+.hero .punkte-num { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--sun-ink); font-variant-numeric: tabular-nums; }
+.hero .punkte-lab { font-size: var(--fs-sm); color: var(--ink-55); }
+.fortschritt-linie { height: 8px; border-radius: var(--r-pill); background: var(--accent-08); overflow: hidden; margin-top: var(--s2); }
+.fortschritt-linie > span { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--sun)); }
+.icon-knopf {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--accent-08); color: var(--accent-ink); font-size: 1.2rem;
   display: flex; align-items: center; justify-content: center;
-  font-size: 5.5rem; pointer-events: none; opacity: 0; z-index: 5;
 }
-.feedback.zeig { animation: pop .7s ease; }
-@keyframes pop { 0%{opacity:0; transform:scale(.4) rotate(-8deg);} 30%{opacity:1; transform:scale(1.15) rotate(4deg);} 100%{opacity:0; transform:scale(1);} }
+.icon-knopf:active { transform: scale(.94); }
 
-/* Auswahl-Kacheln */
-.auswahl { display: grid; gap: 14px; width: 100%; padding: 14px; }
+/* ---------- Spielkacheln (kategoriefarbig) ---------- */
+.kacheln { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.kachel {
+  background: var(--card); border-radius: var(--r-lg); padding: var(--s4);
+  display: flex; align-items: center; gap: var(--s3); cursor: pointer;
+  box-shadow: var(--sh-sm); transition: transform .1s ease;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); color: var(--ink);
+}
+.kachel:active { transform: translateY(2px) scale(.985); }
+.kachel .emoji {
+  width: 52px; height: 52px; flex: none; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center; font-size: 1.9rem;
+  background: var(--tint, var(--accent-08));
+}
+.kachel.k-aufmerksamkeit .emoji { background: var(--k-auf-bg); }
+.kachel.k-gedaechtnis    .emoji { background: var(--k-ged-bg); }
+.kachel.k-rechnen        .emoji { background: var(--k-rech-bg); }
+.kachel.k-lesen          .emoji { background: var(--k-les-bg); }
+.kachel .kachel-name { line-height: 1.1; }
+
+/* ---------- Fortschrittspunkte (in Spielen) ---------- */
+.fortschritt { display: flex; gap: var(--s2); justify-content: center; }
+.punkt { width: 14px; height: 14px; border-radius: 50%; background: var(--accent-08); transition: transform .15s ease, background .15s ease; }
+.punkt.aktiv { background: var(--accent); transform: scale(1.15); }
+.punkt.fertig { background: var(--sun); }
+
+/* ---------- Spielkopf & -fläche ---------- */
+.spiel-kopf { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); }
+.spiel-kopf h2 { font-size: var(--fs-lg); }
+.spielfeld {
+  position: relative; flex: 1; min-height: 340px;
+  background: var(--card); border-radius: var(--r-lg); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 2px 10px rgba(47,107,73,.06);
+}
+.frage { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); text-align: center; color: var(--ink); }
+
+.feedback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; pointer-events: none; opacity: 0; z-index: 5; }
+.feedback.zeig { animation: pop .7s ease; }
+@keyframes pop { 0%{opacity:0; transform:scale(.4) rotate(-8deg);} 30%{opacity:1; transform:scale(1.12) rotate(4deg);} 100%{opacity:0; transform:scale(1);} }
+
+/* Auswahl-Tasten */
+.auswahl { display: grid; gap: var(--s3); width: 100%; padding: var(--s3); }
 .auswahl.zwei { grid-template-columns: 1fr 1fr; }
 .auswahl.drei { grid-template-columns: 1fr 1fr 1fr; }
 .wahl {
-  background: var(--weiss);
-  border: 3px solid #e6efe9;
-  border-radius: var(--rund);
-  min-height: var(--tap);
-  font-family: var(--font-titel);
-  font-size: 2.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
-  box-shadow: 0 5px 0 #e6efe9;
-  transition: transform .08s ease;
+  background: var(--card); border: 2px solid var(--accent-08); border-radius: var(--r-md);
+  min-height: 72px; font-family: var(--font-display); font-weight: 600; font-size: 1.9rem; color: var(--ink);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; padding: var(--s3);
+  box-shadow: var(--sh-sm); transition: transform .08s ease, box-shadow .08s ease, border-color .1s ease;
 }
-.wahl:active { transform: translateY(3px); box-shadow: 0 2px 0 #e6efe9; }
-.wahl.richtig { border-color: var(--blatt); background: #e9faf0; box-shadow: 0 5px 0 var(--blatt); }
-.wahl.falsch  { border-color: var(--beere); background: #fdefe6; box-shadow: 0 5px 0 var(--beere); }
+.wahl:active { transform: translateY(2px) scale(.99); }
+.wahl.richtig { border-color: var(--accent); background: #eafaf0; }
+.wahl.falsch  { border-color: var(--danger); background: #fdefe9; }
 
-/* Raster (Echo / Finde-mich) */
-.raster { display: grid; gap: 12px; width: 100%; max-width: 340px; }
+/* Raster (Echo / Finde) */
+.raster { display: grid; gap: var(--s3); width: 100%; max-width: 320px; }
 .zelle {
-  aspect-ratio: 1;
-  background: var(--weiss);
-  border-radius: 20px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; cursor: pointer;
-  border: 2px solid #e6efe9;
-  box-shadow: 0 4px 0 #e6efe9;
+  aspect-ratio: 1; background: var(--card); border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer;
+  border: 2px solid var(--accent-08); box-shadow: var(--sh-sm);
   transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
 }
-.zelle.leuchtet {
-  background: radial-gradient(circle at 50% 40%, #fff2c9, var(--sonne));
-  transform: scale(1.08);
-  box-shadow: 0 0 0 6px rgba(247,201,72,.35), 0 6px 0 var(--sonne-tief);
-  border-color: var(--sonne);
-}
-.zelle.getippt { background: #e9faf0; border-color: var(--blatt); box-shadow: 0 4px 0 var(--blatt); }
+.zelle.leuchtet { background: radial-gradient(circle at 50% 40%, #fff2c9, var(--sun)); transform: scale(1.06); box-shadow: 0 0 0 6px rgba(247,201,72,.28), var(--sh-md); border-color: var(--sun); }
+.zelle.getippt { background: #eafaf0; border-color: var(--accent); }
 
-/* Pilz-Stopp bewegliches Feld */
-.pilz {
-  position: absolute;
-  font-size: 3.6rem;
-  cursor: pointer;
-  transition: transform .1s ease;
-  filter: drop-shadow(0 3px 3px rgba(0,0,0,.15));
-}
+.pilz { position: absolute; font-size: 3.4rem; cursor: pointer; transition: transform .1s ease; filter: drop-shadow(0 3px 3px rgba(0,0,0,.14)); }
 .pilz:active { transform: scale(.88); }
 
-/* Eltern-Bereich */
-.balken { background: #e6efe9; border-radius: 10px; height: 22px; overflow: hidden; margin-bottom: 6px; }
-.balken > span { display:block; height:100%; background: linear-gradient(90deg, var(--blatt), var(--sonne)); border-radius: 10px; }
-.zeile { display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid #eef3ef; }
-.pin-feld { font-family: var(--font-titel); font-size: 2.6rem; letter-spacing: .3em; text-align:center; min-height: 3rem; color: var(--blatt-dunkel); }
-.pin-tasten { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:320px; margin:0 auto; }
+/* ---------- Belohnung / Peak ---------- */
+.punkte-plus { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; color: var(--sun-ink); animation: pop .8s ease; }
+.sticker-gross { font-size: 4rem; animation: pop .9s ease; }
+.konfetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+.konfetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; opacity: .9; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: .9; } }
 
-/* Album */
-.album { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+/* ---------- Balken / Eltern ---------- */
+.balken { background: var(--accent-08); border-radius: var(--r-pill); height: 12px; overflow: hidden; margin-bottom: var(--s2); }
+.balken > span { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--sun)); }
+.zeile { display: flex; justify-content: space-between; align-items: center; padding: var(--s3) 0; border-bottom: 1px solid var(--accent-08); }
+.zeile strong { font-variant-numeric: tabular-nums; }
+.pin-feld { font-family: var(--font-display); font-size: 2.4rem; letter-spacing: .3em; text-align: center; min-height: 3rem; color: var(--accent-ink); }
+.pin-tasten { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--s3); max-width: 300px; margin: 0 auto; }
+
+/* ---------- Album ---------- */
+.album { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--s3); }
 .abzeichen {
-  aspect-ratio:1; border-radius:20px;
-  display:flex; align-items:center; justify-content:center; font-size:2.4rem;
-  background: radial-gradient(circle at 50% 38%, #fff, #eef7f1);
-  box-shadow:0 6px 14px rgba(47,107,73,.10);
-  border: 1px solid rgba(47,107,73,.06);
+  aspect-ratio: 1; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 2.1rem;
+  background: radial-gradient(circle at 50% 38%, #fff, #eef7f1); box-shadow: var(--sh-sm);
 }
-.abzeichen.leer { opacity:.3; font-size:1.4rem; box-shadow:none; background:#f0f5f1; }
+.abzeichen.leer { opacity: .3; font-size: 1.3rem; box-shadow: none; background: var(--accent-08); }
 
-/* =====================================================================
-   PLASTISCHE TIEFE ("Knet-/Spielzeug"-Look) – dezent, ohne 3D-Engine.
-   Weiche Lichter oben, tiefe Schatten unten, leichtes Kippen beim Tippen.
-   Alles per CSS -> flüssig auch auf günstigen Geräten, offline.
-   ===================================================================== */
-
-/* Weiche Wald-Hügel als Szenentiefe unten */
-body {
-  background:
-    radial-gradient(120px 120px at 82% 92px, rgba(247,201,72,.55), rgba(247,201,72,0) 70%),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='720' height='240' viewBox='0 0 720 240'><path d='M0 150 Q 180 90 360 150 T 720 150 V240 H0 Z' fill='%2352ab77' opacity='0.20'/><path d='M0 190 Q 200 130 420 185 T 720 175 V240 H0 Z' fill='%233f8a5f' opacity='0.20'/></svg>") bottom / 100% auto no-repeat,
-    linear-gradient(180deg, var(--himmel1) 0%, var(--himmel2) 46%, var(--sand) 100%);
-  background-attachment: fixed, fixed, fixed;
+/* ---------- Untere Navigation (Daumenzone) ---------- */
+.tabbar {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 480px; z-index: 40;
+  display: flex; justify-content: space-around; align-items: stretch;
+  padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,.86); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--accent-08); box-shadow: 0 -6px 20px rgba(47,107,73,.06);
 }
-
-/* Knöpfe: gewölbt wirken (Licht oben, Rundung), Schatten am Boden */
-.knopf {
-  background-image: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 42%, rgba(0,0,0,.06));
-  box-shadow: var(--schatten-knopf) var(--blatt-tief),
-              inset 0 3px 0 rgba(255,255,255,.35),
-              inset 0 -3px 6px rgba(0,0,0,.10),
-              0 12px 18px rgba(47,107,73,.18);
+.tabbtn {
+  flex: 1; border: none; background: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--s2) 0;
+  color: var(--ink-55); font-family: var(--font-body); font-weight: 700; font-size: .72rem;
 }
-.knopf.zweit { box-shadow: 0 6px 0 #e7dcc7, inset 0 3px 0 rgba(255,255,255,.6), 0 10px 16px rgba(47,107,73,.10); }
-.knopf.sonne { box-shadow: 0 6px 0 var(--sonne-tief), inset 0 3px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.10), 0 12px 18px rgba(224,169,46,.28); }
-.knopf:active { box-shadow: 0 2px 0 var(--blatt-tief), inset 0 2px 4px rgba(0,0,0,.18); }
+.tabbtn .ti { font-size: 1.5rem; line-height: 1; }
+.tabbtn.aktiv { color: var(--accent-ink); }
+.tabbtn.aktiv .ti { transform: translateY(-1px); }
+.tabbtn:active { transform: scale(.94); }
 
-/* Nala: rundes „Spielzeug" mit Boden-Schatten, der beim Hüpfen mitfedert */
-.nala { position: relative; }
-.nala::after {
-  content: ""; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
-  width: 78px; height: 16px; border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(47,107,73,.28), rgba(47,107,73,0) 70%);
-  animation: schatten 3s ease-in-out infinite; z-index: -1;
+input.feld {
+  width: 100%; min-height: var(--tap); font-size: var(--fs-md); font-family: var(--font-body);
+  padding: var(--s2) var(--s4); border-radius: var(--r-md); border: 2px solid var(--accent-08); background: var(--card); color: var(--ink);
 }
-@keyframes schatten { 0%,100%{ width:78px; opacity:.55; } 50%{ width:58px; opacity:.32; } }
-
-/* Kacheln: erhabene, glänzende Steine – kippen leicht beim Tippen */
-.kachel {
-  background-image: linear-gradient(180deg, #ffffff, #f2f8f4);
-  box-shadow: 0 10px 20px rgba(47,107,73,.14), inset 0 2px 0 rgba(255,255,255,.9), inset 0 -6px 10px rgba(47,107,73,.06);
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-.kachel:active {
-  transform: perspective(600px) translateY(3px) rotateX(9deg) scale(.985);
-  box-shadow: 0 5px 10px rgba(47,107,73,.16), inset 0 2px 0 rgba(255,255,255,.9);
-}
-.kachel .emoji {
-  box-shadow: inset 0 -5px 8px rgba(47,107,73,.10), inset 0 3px 4px rgba(255,255,255,.9), 0 4px 8px rgba(47,107,73,.10);
-}
-
-/* Karten: sanftes Oberlicht */
-.karte { background-image: linear-gradient(180deg, #ffffff, #fbfdfc); box-shadow: 0 12px 28px rgba(47,107,73,.13), inset 0 2px 0 rgba(255,255,255,.9); }
-
-/* Auswahl-Knöpfe: plastische Tasten mit Oberlicht */
-.wahl {
-  background-image: linear-gradient(180deg, #ffffff, #eef6f0);
-  box-shadow: 0 5px 0 #d9e6dd, inset 0 2px 0 rgba(255,255,255,.9), 0 9px 16px rgba(47,107,73,.10);
-  transition: transform .1s ease, box-shadow .1s ease;
-}
-.wahl:active { transform: perspective(600px) translateY(3px) rotateX(8deg); box-shadow: 0 2px 0 #d9e6dd, inset 0 2px 5px rgba(0,0,0,.10); }
-.wahl.richtig { box-shadow: 0 5px 0 var(--blatt), inset 0 2px 0 rgba(255,255,255,.7), 0 9px 18px rgba(82,171,119,.30); }
-.wahl.falsch  { box-shadow: 0 5px 0 var(--beere), inset 0 2px 0 rgba(255,255,255,.7), 0 9px 18px rgba(239,138,99,.28); }
-
-/* Raster-Felder: runde „Perlen" mit Glanzpunkt */
-.zelle {
-  background-image: radial-gradient(circle at 34% 28%, #ffffff, #eef5f0 62%);
-  box-shadow: 0 5px 0 #dbe8df, inset 0 2px 3px rgba(255,255,255,.9), inset 0 -4px 8px rgba(47,107,73,.08), 0 8px 14px rgba(47,107,73,.08);
-}
-.zelle.leuchtet {
-  background-image: radial-gradient(circle at 40% 32%, #fff6d6, var(--sonne) 78%);
-  box-shadow: 0 0 0 7px rgba(247,201,72,.30), 0 8px 0 var(--sonne-tief), 0 10px 22px rgba(224,169,46,.40), inset 0 3px 4px rgba(255,255,255,.7);
-}
-
-/* Abzeichen: glänzende Knöpfe */
-.abzeichen { box-shadow: 0 8px 16px rgba(47,107,73,.14), inset 0 2px 0 rgba(255,255,255,.9), inset 0 -5px 9px rgba(47,107,73,.08); }
-
-/* Spielfläche: leicht vertiefte Bühne */
-.spielfeld { box-shadow: inset 0 3px 10px rgba(47,107,73,.12), inset 0 -2px 6px rgba(255,255,255,.6); }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
-  .nala::after { animation: none !important; }
 }

@@ -37,8 +37,10 @@
     Store.profile().forEach(p => {
       const k = el('div', 'kachel');
       k.append(el('span', 'emoji', p.avatar));
-      k.append(document.createTextNode(p.name));
-      k.append(el('div', 'mini', `⭐ ${p.punkte} · Stufe ${1 + Math.floor(p.punkte/200)}`));
+      const t = el('div');
+      t.append(el('div', 'kachel-name', p.name));
+      t.append(el('div', 'mini', `⭐ ${p.punkte} · Stufe ${1 + Math.floor(p.punkte/200)}`));
+      k.append(t);
       k.addEventListener('pointerdown', () => { Audio.tipp(); Store.profilWaehlen(p.id); start(); });
       grid.append(k);
     });
@@ -110,45 +112,109 @@
     return box;
   }
 
+  // Avatar mit Fortschrittsring zur nächsten Stufe + Stufen-Abzeichen
+  let ringId = 0;
+  function avatarRing(p) {
+    const punkte = p ? p.punkte : 0;
+    const rang = 1 + Math.floor(punkte / 200);
+    const prog = (punkte % 200) / 200;
+    const wrap = el('div', 'avatar-ring');
+    const R = 34, C = 2 * Math.PI * R, gid = 'ring' + (++ringId);
+    wrap.innerHTML =
+      `<svg width="76" height="76" viewBox="0 0 76 76">
+         <circle cx="38" cy="38" r="${R}" fill="none" stroke="rgba(63,138,95,.12)" stroke-width="6"/>
+         <circle cx="38" cy="38" r="${R}" fill="none" stroke="url(#${gid})" stroke-width="6" stroke-linecap="round"
+                 stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-prog)).toFixed(1)}"/>
+         <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
+           <stop offset="0" stop-color="#3f8a5f"/><stop offset="1" stop-color="#f7c948"/></linearGradient></defs>
+       </svg>`;
+    wrap.append(el('div', 'gesicht', p ? p.avatar : '🐿️'));
+    wrap.append(el('div', 'stufe-badge', String(rang)));
+    return wrap;
+  }
+
+  // Untere Navigation (Daumenzone)
+  function tabbar(active) {
+    const bar = el('div', 'tabbar');
+    const mk = (id, icon, label, fn) => {
+      const b = el('button', 'tabbtn' + (active === id ? ' aktiv' : ''));
+      b.innerHTML = `<span class="ti">${icon}</span>`;
+      b.append(document.createTextNode(label));
+      b.addEventListener('pointerdown', () => { Audio.tipp(); fn(); });
+      return b;
+    };
+    bar.append(
+      mk('ueben', '🏡', 'Start', () => start()),
+      mk('album', '🎖️', 'Album', () => albumZeigen()),
+      mk('eltern', '👪', 'Eltern', () => pinAbfrage()),
+    );
+    return bar;
+  }
+
+  // Konfetti für Erfolgsmomente (Peak)
+  function konfetti() {
+    const farben = ['#3f8a5f', '#f7c948', '#e0894a', '#7c6cd8', '#4a7fe0'];
+    const box = el('div', 'konfetti');
+    for (let i = 0; i < 30; i++) {
+      const s = el('i');
+      s.style.left = Math.random() * 100 + '%';
+      s.style.background = farben[i % farben.length];
+      s.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
+      s.style.animationDelay = (Math.random() * 0.3) + 's';
+      box.append(s);
+    }
+    document.body.append(box);
+    setTimeout(() => box.remove(), 3400);
+  }
+
   // ============================================================
-  // STARTBILDSCHIRM
+  // STARTBILDSCHIRM (Home)
   // ============================================================
   function start() {
     leeren();
     Music.play('menu');
     const p = Store.aktivesProfil();
-    const s = el('div', 'screen');
-    s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
-    s.append(profilKopf());
-    const gruss = p ? `Hallo ${p.name}! Schön, dass du da bist. 🌰` : 'Hallo! Schön, dass du da bist. 🌰';
-    s.append(nalaSagt(gruss, p ? p.avatar : '🐿️', false)); // beim Laden nicht vorlesen (Browser blockt Ton ohne Tipp)
+    const punkte = Store.getPunkte();
+    const s = el('div', 'screen hat-tabbar');
 
+    // Hero-Kopf: Profil, Punkte (Wert betont), Fortschritt zur nächsten Stufe
+    const hero = el('div', 'hero karte');
+    hero.append(avatarRing(p));
+    const info = el('div', 'info');
+    info.append(el('div', 'name', p ? p.name : 'Gast'));
+    const stat = el('div', 'punkte-stat');
+    stat.append(el('span', 'punkte-num', String(punkte)));
+    stat.append(el('span', 'punkte-lab', 'Punkte'));
+    info.append(stat);
+    const linie = el('div', 'fortschritt-linie'); const sp = el('span');
+    sp.style.width = Math.round(((punkte % 200) / 200) * 100) + '%'; linie.append(sp); info.append(linie);
+    info.append(el('div', 'mini', `Noch ${200 - (punkte % 200)} bis Stufe ${Store.rang() + 1}`));
+    hero.append(info);
+    const wechseln = el('button', 'icon-knopf', '🔄');
+    wechseln.setAttribute('aria-label', 'Profil wechseln');
+    wechseln.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
+    hero.append(wechseln);
+    s.append(hero);
+
+    // Primärer CTA
     const losKnopf = el('button', 'knopf gross', '▶  Heute üben');
     losKnopf.addEventListener('pointerdown', () => { Audio.tipp(); sessionStarten(); });
     s.append(losKnopf);
 
-    // Freie Spielwahl (optional, ohne Druck)
-    s.append(el('p', 'hinweis zentriert', 'Oder ein einzelnes Spiel wählen:'));
+    // Einzelne Spiele – kategoriefarbig
+    s.append(el('div', 'label', 'Einzelne Spiele'));
     const kacheln = el('div', 'kacheln');
     Games.katalog.forEach(g => {
-      const k = el('div', 'kachel');
+      const k = el('div', 'kachel k-' + g.bereich);
       k.append(el('span', 'emoji', g.emoji));
-      k.append(document.createTextNode(g.name));
+      k.append(el('span', 'kachel-name', g.name));
       k.addEventListener('pointerdown', () => { Audio.tipp(); einzelspiel(g.id); });
       kacheln.append(k);
     });
     s.append(kacheln);
 
-    s.append(el('div', 'spacer'));
-    const fuss = el('div', 'reihe mitte');
-    const album = el('button', 'knopf zweit klein', '🎖️ Album');
-    album.addEventListener('pointerdown', () => { Audio.tipp(); albumZeigen(); });
-    const eltern = el('button', 'knopf zweit klein', '👪 Eltern');
-    eltern.addEventListener('pointerdown', () => { Audio.tipp(); pinAbfrage(); });
-    fuss.append(album, eltern);
-    s.append(fuss);
-
     app.append(s);
+    app.append(tabbar('ueben'));
   }
 
   // ============================================================
@@ -247,18 +313,21 @@
       Music.play('finale');
 
       leeren();
+      konfetti();
       const s = el('div', 'screen zentriert');
       s.append(el('div', 'spacer'));
-      s.append(nalaSagt('Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
+      s.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}! Ich bin stolz auf dich! 💛`
+                                        : 'Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
       const card = el('div', 'karte zentriert');
-      card.append(el('p', 'hinweis', 'Heute gesammelt:'));
+      card.style.display = 'flex'; card.style.flexDirection = 'column'; card.style.gap = 'var(--s3)'; card.style.alignItems = 'center';
+      card.append(el('div', 'sticker-gross', sticker));
+      card.append(el('div', 'label', 'Heute gesammelt'));
       card.append(el('div', 'punkte-plus', `+${punkteSession} ⭐`));
-      card.append(el('p', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang}`));
-      if (pr.aufgestiegen) card.append(el('p', 'frage', `🎉 Neue Stufe ${pr.rang}!`));
-      card.append(el('p', 'hinweis', 'Neues Abzeichen fürs Album:'));
-      const st = el('div', null, sticker); st.style.fontSize = '4rem';
-      st.style.animation = 'pop .8s ease';
-      card.append(st);
+      // Fortschritt zur nächsten Stufe
+      const linie = el('div', 'fortschritt-linie'); linie.style.width = '100%';
+      const sp = el('span'); sp.style.width = Math.round(((pr.punkte % 200) / 200) * 100) + '%'; linie.append(sp);
+      card.append(linie);
+      card.append(el('div', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} bis Stufe ${pr.rang + 1}`));
       s.append(card);
       if (pr.aufgestiegen) Audio.sprich('Super! Du hast eine neue Stufe erreicht!');
       const fertig = el('button', 'knopf gross', '🏡 Zum Start');
@@ -296,15 +365,16 @@
       const pr = Store.punkteGeben(gained);
       Audio.jubel();
       Music.play('finale');
+      if (pr.aufgestiegen) konfetti();
       leeren();
       const e = el('div', 'screen zentriert');
       e.append(el('div', 'spacer'));
-      e.append(nalaSagt(Audio.lob(), '🐿️'));
+      e.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}!` : Audio.lob(), '🐿️'));
       const card = el('div', 'karte zentriert');
+      card.style.display='flex'; card.style.flexDirection='column'; card.style.gap='var(--s2)'; card.style.alignItems='center';
       card.append(el('div', 'punkte-plus', `+${gained} ⭐`));
       card.append(el('p', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang}`));
       e.append(card);
-      if (pr.aufgestiegen) e.append(el('p', 'frage', `🎉 Neue Stufe ${pr.rang}!`));
       const k = el('button', 'knopf gross', '🏡 Zum Start');
       k.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
       e.append(k); e.append(el('div','spacer'));
@@ -317,15 +387,19 @@
   // ============================================================
   function albumZeigen() {
     leeren();
-    const s = el('div', 'screen');
-    const kopf = el('div', 'spiel-kopf');
-    kopf.append(el('h2', null, '🎖️ Mein Album'));
-    const raus = el('button', 'knopf zweit klein', '✕');
-    raus.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
-    kopf.append(raus); s.append(kopf);
+    Music.play('menu');
+    const s = el('div', 'screen hat-tabbar');
+    s.append(el('h1', null, 'Mein Album'));
 
     const prof = Store.aktivesProfil() || { abzeichen: [] };
-    s.append(el('p', 'hinweis', `Du hast ${prof.abzeichen.length} Abzeichen gesammelt. ⭐ ${Store.getPunkte()} Punkte · Stufe ${Store.rang()}`));
+    const stat = el('div', 'hero karte');
+    stat.append(avatarRing(Store.aktivesProfil()));
+    const info = el('div', 'info');
+    info.append(el('div', 'name', `${prof.abzeichen.length} Abzeichen`));
+    info.append(el('div', 'mini', `⭐ ${Store.getPunkte()} Punkte · Stufe ${Store.rang()}`));
+    stat.append(info);
+    s.append(stat);
+
     const grid = el('div', 'album');
     const total = Math.max(16, Math.ceil(prof.abzeichen.length / 8) * 8);
     for (let i = 0; i < total; i++) {
@@ -336,6 +410,7 @@
     }
     s.append(grid);
     app.append(s);
+    app.append(tabbar('album'));
   }
 
   // ============================================================
