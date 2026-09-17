@@ -23,6 +23,7 @@ const Store = (() => {
     version: 2,
     pin: '1234',            // Eltern-PIN
     tonAn: true, spracheAn: true, musikAn: true,
+    stimmeName: '',         // vom Elternteil gewählte Vorlese-Stimme (Name)
     aktiv: null,            // ID des aktiven Profils
     profile: [],            // Liste aller Profile
   };

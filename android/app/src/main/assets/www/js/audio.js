@@ -7,6 +7,7 @@ const Audio = (() => {
   let spracheAn = true;
   let ctx = null;
   let besteStimme = null;
+  let stimmeName = null;   // vom Elternteil gewählte Stimme (Name)
 
   function ctxHolen() {
     if (!ctx) {
@@ -41,21 +42,42 @@ const Audio = (() => {
   function jubel() { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => ton(f, 0.20, 'sine'), i * 110)); }
 
   // Eine freundliche, warm klingende Stimme auswählen (weiblich/kindgerecht bevorzugt)
+  // Bewertet, wie natürlich/freundlich eine Stimme klingt (höher = besser).
+  function stimmScore(v) {
+    const n = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase();
+    let s = 0;
+    if (/(neural|natural|enhanced|premium|wavenet|siri)/.test(n)) s += 8; // hochwertige Stimmen
+    if (/google/.test(n)) s += 5;                                          // Google-Netzstimmen klingen natürlich
+    if (/(anna|helena|petra|marlene|katja|vicki|klara|milena|sandy|amira|female|weiblich)/.test(n)) s += 3;
+    if (!v.localService) s += 2;                                           // Netzstimmen sind oft natürlicher
+    if (lang === 'de-de') s += 2; else if (lang === 'de-ch' || lang === 'de-at') s += 1;
+    if (/(espeak|compact|eloquence|robot|pico)/.test(n)) s -= 8;           // typische Roboterstimmen
+    return s;
+  }
+
   function stimmeWaehlen() {
     if (!('speechSynthesis' in window)) return null;
     const alle = window.speechSynthesis.getVoices();
     if (!alle.length) return null;
+    // Vom Elternteil gewählte Stimme hat Vorrang
+    if (stimmeName) {
+      const gewaehlt = alle.find(v => v.name === stimmeName);
+      if (gewaehlt) return gewaehlt;
+    }
     const de = alle.filter(v => v.lang && v.lang.toLowerCase().startsWith('de'));
     const pool = de.length ? de : alle;
-    // Bekannte, freundlich klingende (meist weibliche) deutsche Stimmen zuerst
-    const wunsch = ['petra','anna','marlene','vicki','katja','helena','sandy','klara',
-                    'google deutsch','markus','yannick'];
-    for (const name of wunsch) {
-      const f = pool.find(v => v.name.toLowerCase().includes(name));
-      if (f) return f;
-    }
-    // sonst lokale Stimme bevorzugen (klingt oft natürlicher)
-    return pool.find(v => v.localService) || pool[0];
+    return pool.slice().sort((a, b) => stimmScore(b) - stimmScore(a))[0];
+  }
+
+  // Liste deutscher Stimmen für die Auswahl im Eltern-Bereich (beste zuerst)
+  function stimmen() {
+    if (!('speechSynthesis' in window)) return [];
+    const alle = window.speechSynthesis.getVoices();
+    const de = alle.filter(v => v.lang && v.lang.toLowerCase().startsWith('de'));
+    return (de.length ? de : alle).slice()
+      .sort((a, b) => stimmScore(b) - stimmScore(a))
+      .map(v => ({ name: v.name, lang: v.lang, lokal: v.localService }));
   }
 
   // Anweisungen/Lob vorlesen – warm, ruhig, nicht hektisch
@@ -73,8 +95,8 @@ const Audio = (() => {
       if (!besteStimme) besteStimme = stimmeWaehlen();
       if (besteStimme) { u.voice = besteStimme; u.lang = besteStimme.lang; }
       else u.lang = 'de-DE';
-      u.rate = 0.9;    // etwas langsamer = freundlicher, besser verständlich
-      u.pitch = 1.2;   // etwas höher = wärmer, kindgerechter
+      u.rate = 0.95;   // ruhig, aber nicht schleppend
+      u.pitch = 1.15;  // leicht höher = wärmer/kindgerechter (nicht schrill)
       u.volume = 1;
       window.speechSynthesis.speak(u);
     } catch (e) { /* still */ }
@@ -99,10 +121,12 @@ const Audio = (() => {
   }
 
   return {
-    richtig, falsch, tipp, jubel, sprich, stopp, ton, lob,
+    richtig, falsch, tipp, jubel, sprich, stopp, ton, lob, stimmen,
     get tonAn() { return tonAn; },
     get spracheAn() { return spracheAn; },
+    get stimme() { return stimmeName; },
     setTon(v) { tonAn = v; },
     setSprache(v) { spracheAn = v; if (!v) stopp(); },
+    setStimme(name) { stimmeName = name || null; besteStimme = stimmeWaehlen(); },
   };
 })();

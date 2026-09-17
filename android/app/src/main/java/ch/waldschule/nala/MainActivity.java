@@ -5,6 +5,7 @@ import android.graphics.Insets;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -12,6 +13,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Nalas Waldschule – schlanke WebView-App.
@@ -24,19 +26,15 @@ public class MainActivity extends Activity {
     private WebView web;
     private TextToSpeech tts;
     private boolean ttsReady = false;
+    private boolean ttsFallbackTried = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        tts = new TextToSpeech(this, status -> {
-            if (status == TextToSpeech.SUCCESS && tts != null) {
-                tts.setLanguage(new Locale("de", "DE"));
-                tts.setPitch(1.15f);        // etwas höher = wärmer, kindgerechter
-                tts.setSpeechRate(0.9f);    // etwas langsamer = freundlicher
-                ttsReady = true;
-            }
-        });
+        // Zuerst die Google-Sprachausgabe versuchen (natürlichste Stimmen),
+        // sonst automatisch auf die Standard-Engine zurückfallen.
+        initTts("com.google.android.tts");
 
         web = new WebView(this);
         WebSettings s = web.getSettings();
@@ -67,6 +65,47 @@ public class MainActivity extends Activity {
         setContentView(web);
 
         web.loadUrl("file:///android_asset/www/index.html");
+    }
+
+    // TextToSpeech mit gewünschter Engine starten (null = Standard-Engine).
+    private void initTts(String engine) {
+        TextToSpeech.OnInitListener listener = this::onTtsInit;
+        tts = (engine == null) ? new TextToSpeech(this, listener)
+                               : new TextToSpeech(this, listener, engine);
+    }
+
+    private void onTtsInit(int status) {
+        if (status == TextToSpeech.SUCCESS && tts != null) {
+            tts.setLanguage(new Locale("de", "DE"));
+            waehleNatuerlicheStimme();
+            tts.setPitch(1.15f);       // etwas höher = wärmer, kindgerechter
+            tts.setSpeechRate(0.95f);  // ruhig, aber nicht schleppend
+            ttsReady = true;
+        } else if (!ttsFallbackTried) {
+            // Google-Engine nicht verfügbar -> Standard-Engine verwenden
+            ttsFallbackTried = true;
+            if (tts != null) { try { tts.shutdown(); } catch (Exception ignored) {} }
+            initTts(null);
+        }
+    }
+
+    // Wählt die natürlichste deutsche Stimme (möglichst hochwertig, weiblich, offline).
+    private void waehleNatuerlicheStimme() {
+        try {
+            Set<Voice> voices = tts.getVoices();
+            if (voices == null) return;
+            Voice best = null; int bestScore = Integer.MIN_VALUE;
+            for (Voice v : voices) {
+                if (v.getLocale() == null || !"de".equals(v.getLocale().getLanguage())) continue;
+                String n = v.getName() == null ? "" : v.getName().toLowerCase();
+                int score = v.getQuality();                 // höher = besser
+                if (n.contains("female") || n.contains("nfh") || n.contains("-f")) score += 300;
+                if (v.getLocale().getCountry().equalsIgnoreCase("DE")) score += 100;
+                if (v.isNetworkConnectionRequired()) score -= 50; // offline bevorzugen
+                if (best == null || score > bestScore) { best = v; bestScore = score; }
+            }
+            if (best != null) tts.setVoice(best);
+        } catch (Exception ignored) { /* Standardstimme behalten */ }
     }
 
     /** Brücke: Web ruft AndroidTTS.speak(...) / AndroidTTS.stop() auf. */

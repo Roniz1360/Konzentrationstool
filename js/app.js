@@ -19,6 +19,7 @@
   // Audio-Einstellungen aus Speicher laden
   Audio.setTon(daten().tonAn);
   Audio.setSprache(daten().spracheAn);
+  Audio.setStimme(daten().stimmeName);
   Music.setEnabled(daten().musikAn);
 
   function leeren() { app.innerHTML = ''; Audio.stopp(); }
@@ -519,6 +520,23 @@
     set.append(schalter('🔊 Töne', d.tonAn, (v)=>{ d.tonAn=v; Audio.setTon(v); Store.speichern(); }));
     set.append(schalter('🗣️ Vorlesen', d.spracheAn, (v)=>{ d.spracheAn=v; Audio.setSprache(v); Store.speichern(); }));
     set.append(schalter('🎵 Musik', d.musikAn, (v)=>{ d.musikAn=v; Music.setEnabled(v); Store.speichern(); }));
+    // Stimme fürs Vorlesen wählen (falls Gerätestimmen abrufbar sind)
+    const stimmenListe = Audio.stimmen ? Audio.stimmen() : [];
+    if (stimmenListe.length) {
+      const row = el('div'); row.style.margin = '12px 0 4px';
+      row.append(el('div', 'mini', '🎙️ Stimme fürs Vorlesen'));
+      const sel = el('select');
+      sel.style.cssText = 'width:100%;min-height:52px;font-size:1rem;margin-top:6px;padding:8px 12px;border-radius:14px;border:2px solid var(--accent-08);background:var(--card);color:var(--ink);';
+      const auto = el('option'); auto.value = ''; auto.textContent = 'Automatisch (beste Stimme)'; sel.append(auto);
+      stimmenListe.forEach(v => { const o = el('option'); o.value = v.name; o.textContent = v.name + (v.lokal ? '' : ' ☁️'); if (v.name === d.stimmeName) o.selected = true; sel.append(o); });
+      sel.addEventListener('change', () => { d.stimmeName = sel.value; Audio.setStimme(sel.value); Store.speichern(); Audio.sprich('Hallo, ich bin Nala. Wollen wir zusammen üben?'); });
+      row.append(sel);
+      const test = el('button', 'knopf zweit klein', '▶ Stimme testen'); test.style.marginTop = '8px';
+      test.addEventListener('pointerdown', () => { Audio.sprich('Hallo, ich bin Nala. Freust du dich aufs Üben?'); });
+      row.append(test);
+      row.append(el('div', 'mini', 'Tipp: Für eine natürliche Stimme auf dem Gerät „Google Sprachausgabe" (Android) installieren bzw. am iPhone unter Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen eine „Premium/Enhanced"-Stimme laden.'));
+      set.append(row);
+    }
     // PIN ändern
     const pinRow = el('div','reihe mitte');
     const pinInput = el('input'); pinInput.type='tel'; pinInput.maxLength=4; pinInput.placeholder='Neue PIN (4 Ziffern)';
