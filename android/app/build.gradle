@@ -29,6 +29,11 @@ android {
                 keyAlias keystoreProps['keyAlias']
                 keyPassword keystoreProps['keyPassword']
             }
+            // Alle Signatur-Schemata aktivieren -> breiteste Geräte-Kompatibilität
+            // (v1 = JAR, v2, v3). Verhindert „App nicht installiert" auf manchen Geräten.
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
         }
     }
 
