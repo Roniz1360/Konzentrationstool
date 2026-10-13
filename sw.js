@@ -1,7 +1,7 @@
 /* sw.js – Service Worker: App funktioniert offline.
    Speichert alle Dateien im Cache und liefert sie ohne Internet. */
 
-const CACHE = 'nala-waldschule-v2';
+const CACHE = 'nala-waldschule-v3';
 const DATEIEN = [
   './',
   './index.html',

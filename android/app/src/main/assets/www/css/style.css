@@ -301,7 +301,7 @@ input.feld {
   cursor: pointer; box-shadow: var(--sh-sm);
   transition: transform .1s ease, border-color .1s ease, box-shadow .1s ease;
 }
-.tier-karte svg { width: 100%; height: auto; display: block; max-width: 180px; }
+.tier-karte svg { width: 100%; height: auto; display: block; max-width: 200px; border-radius: 12px; }
 .tier-karte .slot {
   min-height: 40px; width: 90%; border-radius: var(--r-pill); border: 2px dashed var(--accent-15);
   display: flex; align-items: center; justify-content: center; padding: 2px var(--s3);

@@ -454,7 +454,7 @@ const Games = (() => {
     function karte(t, i, mitSlot) {
       const k = el('div', 'tier-karte');
       k.dataset.i = i;
-      k.innerHTML = Geschichten.tierSVG(t);
+      k.innerHTML = Geschichten.tierSVG(t, auswahl[runde].szene);   // Hintergrund passend zur Geschichte
       if (mitSlot) k.append(el('div', 'slot', '?'));
       return k;
     }
