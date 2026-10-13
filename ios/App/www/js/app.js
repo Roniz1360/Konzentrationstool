@@ -225,7 +225,7 @@
     // Mischung: 1 Aufmerksamkeit + 1 Schulstoff + 1 Gedächtnis (+ optional)
     const auf = ['pilz','sort','finde'];
     const schule = ['zahlen','woerter'];
-    const ged = ['echo','gleich'];
+    const ged = ['echo','gleich','geschichte'];
     const wahl = (arr) => arr[Math.floor(Math.random()*arr.length)];
     const liste = [wahl(auf), wahl(schule), wahl(ged), wahl(auf.concat(schule,ged))];
     // Duplikate direkt hintereinander vermeiden

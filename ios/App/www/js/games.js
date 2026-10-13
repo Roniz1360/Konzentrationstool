@@ -433,6 +433,167 @@ const Games = (() => {
     next();
   }
 
+  // ================================================================
+  // 8) TIER-GESCHICHTEN  (Zuhören + Merken + genau Hinschauen)
+  //    Wie in der Schule: Bilder ansehen, Geschichte hören,
+  //    dann jedem Tier den richtigen Namen geben.
+  // ================================================================
+  function tierGeschichten(feld, level, fertig) {
+    const pool = Geschichten.liste;
+    // Schwierigkeit: mehr Tiere pro Geschichte mit steigender Stufe
+    const erlaubt = level <= 2 ? [3] : level <= 4 ? [3, 4] : [4, 5];
+    let kandidaten = pool.filter(g => erlaubt.includes(g.tiere.length));
+    if (!kandidaten.length) kandidaten = pool;
+    const runden = 2;
+    const auswahl = misch(kandidaten).slice(0, runden);
+    while (auswahl.length < runden) auswahl.push(pool[zufall(0, pool.length - 1)]);
+    const textSichtbar = level <= 3;   // ab Stufe 4 nur zuhören (Text auf Wunsch)
+
+    let runde = 0, correct = 0, total = 0;
+
+    function karte(t, i, mitSlot) {
+      const k = el('div', 'tier-karte');
+      k.dataset.i = i;
+      k.innerHTML = Geschichten.tierSVG(t);
+      if (mitSlot) k.append(el('div', 'slot', '?'));
+      return k;
+    }
+
+    // ---- Phase 1: Bilder ansehen + Geschichte hören ----
+    function hoerPhase() {
+      const g = auswahl[runde];
+      if (window.Music) Music.stop();         // Musik aus, damit man gut zuhören kann
+      feld.innerHTML = '';
+      feld.append(el('p', 'frage', `👂 ${g.titel}`));
+      feld.append(el('p', 'mini zentriert', 'Schau dir die Tiere an und hör gut zu. Merke dir, wie jedes Tier heisst!'));
+
+      // Bilder zuerst – wie der Zettel, der beim Zuhören vor dem Kind liegt
+      const raster = el('div', 'tier-raster kompakt');
+      misch(g.tiere.map((t, i) => i)).forEach(i => raster.append(karte(g.tiere[i], i, false)));
+      feld.append(raster);
+
+      const text = el('div', 'geschichte-text', g.text);
+      if (!textSichtbar) text.hidden = true;
+
+      const knoepfe = el('div', 'reihe mitte');
+      const nochmal = el('button', 'knopf zweit klein', '🔊 Nochmal hören');
+      nochmal.addEventListener('pointerdown', () => Audio.sprich(g.text));
+      knoepfe.append(nochmal);
+      if (!textSichtbar) {
+        const zeig = el('button', 'knopf zweit klein', '📖 Text zeigen');
+        zeig.addEventListener('pointerdown', () => { text.hidden = !text.hidden; });
+        knoepfe.append(zeig);
+      }
+      feld.append(knoepfe, text);
+
+      const weiter = el('button', 'knopf gross', 'Ich habe zugehört ▶');
+      weiter.addEventListener('pointerdown', () => { Audio.stopp(); zuordnen(); });
+      feld.append(weiter);
+
+      Audio.sprich(`${g.titel}. ${g.text}`);
+    }
+
+    // ---- Phase 2: Namen zuordnen (wie das Prüfungsblatt) ----
+    function zuordnen() {
+      const g = auswahl[runde];
+      if (window.Music) Music.play('spiel');
+      feld.innerHTML = '';
+      feld.append(el('p', 'frage', 'Wie heissen die Tiere?'));
+      Audio.sprich('Wie heissen die Tiere? Tippe einen Namen und dann das passende Tier.');
+
+      const chips = el('div', 'namen-chips');
+      const raster = el('div', 'tier-raster');
+      const pruefen = el('button', 'knopf gross', 'Prüfen ✓');
+      pruefen.disabled = true;
+      feld.append(el('p', 'mini zentriert', 'Tippe einen Namen und dann das passende Tier.'));
+      feld.append(chips, raster, pruefen);
+
+      const namen = misch(g.tiere.map(t => t.name));
+      const zuw = new Map();          // Kartenindex -> Name
+      let selName = null, selKarte = null, fertigGeprueft = false;
+
+      const karten = misch(g.tiere.map((t, i) => i)).map(i => {
+        const k = karte(g.tiere[i], i, true);
+        k.addEventListener('pointerdown', () => tippeKarte(i));
+        raster.append(k);
+        return k;
+      });
+      const chipEls = namen.map(n => {
+        const c = el('button', 'chip', n);
+        c.addEventListener('pointerdown', () => tippeName(n));
+        chips.append(c);
+        return c;
+      });
+
+      function zuweisen(i, name) {
+        for (const [k, v] of zuw) if (v === name) zuw.delete(k);   // Name nur einmal vergeben
+        zuw.set(i, name);
+        selName = null; selKarte = null;
+        Audio.tipp();
+        zeichne();
+      }
+      function tippeName(name) {
+        if (fertigGeprueft) return;
+        if (selKarte !== null) { zuweisen(selKarte, name); return; }
+        selName = selName === name ? null : name;
+        Audio.tipp(); zeichne();
+      }
+      function tippeKarte(i) {
+        if (fertigGeprueft) return;
+        if (selName) { zuweisen(i, selName); return; }
+        if (zuw.has(i)) { zuw.delete(i); selKarte = i; }        // Namen wieder wegnehmen
+        else selKarte = selKarte === i ? null : i;
+        Audio.tipp(); zeichne();
+      }
+      function zeichne() {
+        karten.forEach(k => {
+          const i = +k.dataset.i, slot = k.querySelector('.slot');
+          slot.textContent = zuw.get(i) || '?';
+          slot.classList.toggle('voll', zuw.has(i));
+          k.classList.toggle('gewaehlt', selKarte === i);
+        });
+        const benutzt = new Set(zuw.values());
+        chipEls.forEach(c => {
+          c.classList.toggle('aktiv', selName === c.textContent);
+          c.classList.toggle('benutzt', benutzt.has(c.textContent));
+        });
+        pruefen.disabled = zuw.size !== g.tiere.length;
+      }
+
+      pruefen.addEventListener('pointerdown', () => {
+        if (pruefen.disabled || fertigGeprueft) return;
+        fertigGeprueft = true;
+        let richtig = 0;
+        karten.forEach(k => {
+          const i = +k.dataset.i, ok = zuw.get(i) === g.tiere[i].name;
+          k.classList.add(ok ? 'richtig' : 'falsch');
+          if (ok) richtig++;
+          else k.querySelector('.slot').textContent = `💛 ${g.tiere[i].name}`;   // richtige Lösung zeigen
+        });
+        correct += richtig; total += g.tiere.length;
+        if (richtig === g.tiere.length) Audio.jubel(); else Audio.richtig();
+        const lob = richtig === g.tiere.length ? 'Alle richtig – super zugehört!'
+                  : richtig >= g.tiere.length / 2 ? 'Gut gemacht! Schau dir die gelben Karten nochmal an.'
+                  : 'Das war schwierig. Beim nächsten Mal klappt es besser!';
+        chips.innerHTML = '';
+        chips.append(el('div', 'frage', `${richtig} von ${g.tiere.length} richtig`));
+        Audio.sprich(`${richtig} von ${g.tiere.length} richtig. ${lob}`);
+        pruefen.textContent = runde + 1 < runden ? 'Nächste Geschichte ▶' : 'Fertig ▶';
+        pruefen.disabled = false;
+        pruefen.addEventListener('pointerdown', () => {
+          runde++;
+          if (runde < runden) hoerPhase();
+          else fertig({ correct, total, bereich: 'gedaechtnis', newLevel: neuesLevel(level, correct, total, 6) });
+        }, { once: true });
+        feld.insertBefore(el('p', 'mini zentriert', lob), pruefen);
+      });
+
+      zeichne();
+    }
+
+    hoerPhase();
+  }
+
   // ---------- Katalog ----------
   const katalog = [
     { id:'pilz',   name:'Pilz-Stopp',        emoji:'🍄', bereich:'aufmerksamkeit', spielen:pilzStopp },
@@ -442,6 +603,7 @@ const Games = (() => {
     { id:'zahlen', name:'Zahlen-Fischen',    emoji:'🎣', bereich:'rechnen',        spielen:zahlenFischen },
     { id:'woerter',name:'Wörter-Angel',      emoji:'📖', bereich:'lesen',          spielen:woerterAngel },
     { id:'finde',  name:'Finde-mich',        emoji:'🔍', bereich:'aufmerksamkeit', spielen:findeMich },
+    { id:'geschichte', name:'Tier-Geschichten', emoji:'🐾', bereich:'gedaechtnis', spielen:tierGeschichten },
   ];
 
   function byId(id) { return katalog.find(g => g.id === id); }
