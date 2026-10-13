@@ -262,7 +262,34 @@ p.gross  { font-size: var(--fs-md); color: var(--ink-70); }
   aspect-ratio: 1; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 2.1rem;
   background: radial-gradient(circle at 50% 38%, #fff, #eef7f1); box-shadow: var(--sh-sm);
 }
+.abzeichen:not(.leer) {
+  background: radial-gradient(circle at 50% 38%, #fff, #f3f8f4); border: 3px solid #fff;
+  box-shadow: 0 0 0 1px var(--accent-08), var(--sh-sm); transform: rotate(var(--dreh, 0deg));
+}
 .abzeichen.leer { opacity: .3; font-size: 1.3rem; box-shadow: none; background: var(--accent-08); }
+/* Platz für den neuen Sticker: leuchtet und wartet */
+.abzeichen.ziel { opacity: 1; background: #fff8e1; border: 3px dashed var(--sun); animation: warten 1s ease-in-out infinite; }
+@keyframes warten { 0%,100% { box-shadow: 0 0 0 0 rgba(247,201,72,.0); } 50% { box-shadow: 0 0 0 8px rgba(247,201,72,.35); } }
+.abzeichen.neu { animation: kleben .6s cubic-bezier(.3,1.6,.5,1); position: relative; }
+.abzeichen.neu::after {
+  content: 'NEU'; position: absolute; top: -8px; right: -8px; padding: 2px 6px; border-radius: var(--r-pill);
+  background: var(--sun); color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: .65rem;
+  box-shadow: var(--sh-sm); transform: rotate(8deg);
+}
+@keyframes kleben { 0% { transform: scale(1.35) rotate(0deg); } 60% { transform: scale(.92) rotate(var(--dreh, 0deg)); } 100% { transform: scale(1) rotate(var(--dreh, 0deg)); } }
+.sticker-gross { cursor: pointer; filter: drop-shadow(0 6px 10px rgba(0,0,0,.15)); }
+.sticker-flieger {
+  position: fixed; z-index: 60; font-size: 64px; line-height: 1; pointer-events: none;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,.22));
+}
+.spur { position: fixed; z-index: 59; pointer-events: none; color: var(--sun); font-size: 18px; transform: translate(-50%,-50%);
+  animation: spur .7s ease-out forwards; }
+@keyframes spur { to { opacity: 0; transform: translate(-50%,-50%) scale(.2) translateY(14px); } }
+.glitzer { position: fixed; z-index: 60; pointer-events: none; }
+.glitzer i { position: absolute; font-style: normal; font-size: 20px; transform: translate(-50%,-50%); animation: glitzer .9s ease-out forwards; }
+@keyframes glitzer { 0% { opacity: 1; transform: translate(-50%,-50%) scale(.4); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.1) rotate(90deg); } }
+@media (prefers-reduced-motion: reduce) { .abzeichen.ziel, .abzeichen.neu { animation: none; } }
 
 /* ---------- Untere Navigation (Daumenzone) ---------- */
 .tabbar {

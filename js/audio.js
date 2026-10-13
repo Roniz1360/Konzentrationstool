@@ -39,6 +39,9 @@ const Audio = (() => {
   // Sanftes, tiefes „hm" bei falsch – kein Drama, kein Strafton
   function falsch() { ton(330, 0.20, 'sine', 0.09); }
   function tipp(pitch = 1) { ton(500 * pitch, 0.08, 'triangle', 0.07); }
+  // Sticker fliegt ins Album: aufsteigendes «Wuusch», dann ein weiches «Plopp» mit Glitzer
+  function flug() { [392, 494, 587, 698, 784, 880].forEach((f, i) => setTimeout(() => ton(f, 0.09, 'triangle', 0.06), i * 70)); }
+  function klebt() { ton(220, 0.10, 'sine', 0.16); setTimeout(() => [1318, 1568, 2093].forEach((f, i) => setTimeout(() => ton(f, 0.12, 'sine', 0.05), i * 80)), 90); }
   function jubel() { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => ton(f, 0.20, 'sine'), i * 110)); }
 
   // Eine freundliche, warm klingende Stimme auswählen (weiblich/kindgerecht bevorzugt)
@@ -121,7 +124,7 @@ const Audio = (() => {
   }
 
   return {
-    richtig, falsch, tipp, jubel, sprich, stopp, ton, lob, stimmen,
+    richtig, falsch, tipp, jubel, flug, klebt, sprich, stopp, ton, lob, stimmen,
     get tonAn() { return tonAn; },
     get spracheAn() { return spracheAn; },
     get stimme() { return stimmeName; },

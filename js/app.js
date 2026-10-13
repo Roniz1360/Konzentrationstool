@@ -321,8 +321,9 @@
                                         : 'Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
       const card = el('div', 'karte zentriert');
       card.style.display = 'flex'; card.style.flexDirection = 'column'; card.style.gap = 'var(--s3)'; card.style.alignItems = 'center';
-      card.append(el('div', 'sticker-gross', sticker));
-      card.append(el('div', 'label', 'Heute gesammelt'));
+      const stEl = el('div', 'sticker-gross', sticker);
+      card.append(stEl);
+      card.append(el('div', 'label', 'Neuer Sticker!'));
       card.append(el('div', 'punkte-plus', `+${punkteSession} ⭐`));
       // Fortschritt zur nächsten Stufe
       const linie = el('div', 'fortschritt-linie'); linie.style.width = '100%';
@@ -331,9 +332,13 @@
       card.append(el('div', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} bis Stufe ${pr.rang + 1}`));
       s.append(card);
       if (pr.aufgestiegen) Audio.sprich('Super! Du hast eine neue Stufe erreicht!');
-      const fertig = el('button', 'knopf gross', '🏡 Zum Start');
-      fertig.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
-      s.append(fertig);
+      // Sticker selber ins Album kleben – er fliegt von hier an seinen Platz
+      const kleben = el('button', 'knopf gross sonne', '✨ Ins Album kleben');
+      const neuIndex = (Store.aktivesProfil() || { abzeichen: [1] }).abzeichen.length - 1;
+      const zumAlbum = () => { Audio.tipp(); albumZeigen({ neuIndex, von: stEl.getBoundingClientRect() }); };
+      kleben.addEventListener('pointerdown', zumAlbum);
+      stEl.addEventListener('pointerdown', zumAlbum);
+      s.append(kleben);
       s.append(el('div', 'spacer'));
       app.append(s);
     }
@@ -386,9 +391,10 @@
   // ============================================================
   // ALBUM
   // ============================================================
-  function albumZeigen() {
+  function albumZeigen(opt = {}) {
     leeren();
     Music.play('menu');
+    const neu = Number.isInteger(opt.neuIndex) ? opt.neuIndex : -1;
     const s = el('div', 'screen hat-tabbar');
     s.append(el('h1', null, 'Mein Album'));
 
@@ -403,15 +409,80 @@
 
     const grid = el('div', 'album');
     const total = Math.max(16, Math.ceil(prof.abzeichen.length / 8) * 8);
+    let ziel = null;
     for (let i = 0; i < total; i++) {
       const a = el('div', 'abzeichen');
-      if (prof.abzeichen[i]) a.textContent = prof.abzeichen[i];
+      a.style.setProperty('--dreh', [-4, 3, -2, 5, -5, 2, 4, -3][i % 8] + 'deg');  // leicht schief geklebt
+      if (prof.abzeichen[i] && i !== neu) a.textContent = prof.abzeichen[i];
+      else if (i === neu) { a.classList.add('leer', 'ziel'); ziel = a; }
       else { a.classList.add('leer'); a.textContent = '·'; }
       grid.append(a);
     }
     s.append(grid);
     app.append(s);
     app.append(tabbar('album'));
+    if (ziel) stickerFliegt(prof.abzeichen[neu], ziel, opt.von);
+  }
+
+  // Neuer Sticker fliegt in einem Bogen an seinen Platz im Album und «klebt» dort fest.
+  function stickerFliegt(sticker, ziel, von) {
+    const fertig = () => {
+      ziel.classList.remove('leer', 'ziel');
+      ziel.classList.add('neu');
+      ziel.textContent = sticker;
+      Audio.klebt();
+      glitzer(ziel);
+      setTimeout(() => Audio.sprich('Dein neuer Sticker klebt jetzt in deinem Album!'), 500);
+    };
+    const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ziel.scrollIntoView({ block: 'center', behavior: ruhig ? 'auto' : 'smooth' });
+    if (ruhig || !Element.prototype.animate) { setTimeout(fertig, 300); return; }
+
+    setTimeout(() => {
+      const z = ziel.getBoundingClientRect();
+      const start = von && von.width ? von
+        : { left: innerWidth / 2 - 40, top: innerHeight / 2 - 40, width: 80, height: 80 };
+      const sx = start.left + start.width / 2, sy = start.top + start.height / 2;
+      const zx = z.left + z.width / 2, zy = z.top + z.height / 2;
+      const flieger = el('div', 'sticker-flieger', sticker);
+      flieger.style.left = sx + 'px'; flieger.style.top = sy + 'px';
+      document.body.append(flieger);
+      const dx = zx - sx, dy = zy - sy;
+      const bogen = -Math.max(90, Math.abs(dx) * 0.4 + 60);   // Bogen nach oben
+      const klein = Math.min(1, parseFloat(getComputedStyle(ziel).fontSize) / 64);  // Endgrösse = Sticker im Album
+      Audio.flug();
+      const anim = flieger.animate([
+        { transform: 'translate(-50%,-50%) scale(1.5) rotate(0deg)', offset: 0 },
+        { transform: 'translate(-50%,-50%) scale(1.9) rotate(-12deg)', offset: 0.15 },
+        { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5 + bogen}px)) scale(1.3) rotate(200deg)`, offset: 0.55 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${klein * 1.25}) rotate(350deg)`, offset: 0.88 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${klein}) rotate(360deg)`, offset: 1 },
+      ], { duration: 1300, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'forwards' });
+      // Glitzerspur hinter dem Sticker
+      const spur = setInterval(() => {
+        const r = flieger.getBoundingClientRect();
+        const p = el('i', 'spur', '✦');
+        p.style.left = (r.left + r.width / 2) + 'px'; p.style.top = (r.top + r.height / 2) + 'px';
+        document.body.append(p); setTimeout(() => p.remove(), 700);
+      }, 70);
+      anim.onfinish = () => { clearInterval(spur); flieger.remove(); fertig(); };
+    }, 450);
+  }
+
+  function glitzer(ziel) {
+    const r = ziel.getBoundingClientRect();
+    const box = el('div', 'glitzer');
+    box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + r.height / 2) + 'px';
+    ['#f7c948', '#7c6cd8', '#3f8a5f', '#e0894a', '#4a7fe0', '#f08fb0', '#f7c948', '#3f8a5f'].forEach((c, i) => {
+      const p = el('i', null, '★');
+      const w = (i / 8) * Math.PI * 2;
+      p.style.color = c;
+      p.style.setProperty('--x', Math.cos(w) * 56 + 'px');
+      p.style.setProperty('--y', Math.sin(w) * 56 + 'px');
+      box.append(p);
+    });
+    document.body.append(box);
+    setTimeout(() => box.remove(), 1000);
   }
 
   // ============================================================
