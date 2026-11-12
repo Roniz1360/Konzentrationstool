@@ -97,6 +97,6 @@ tools/sync-www.sh     – kopiert die Web-App in die Android-/iOS-Hülle
 
 Nach Änderungen an der Web-App `./tools/sync-www.sh` ausführen, damit Android und iOS
 denselben Stand haben. Die APK baut danach die GitHub-Action «Android-APK bauen».
-Die Dateien in `dist/` sind noch die alte Version 1.3.
+In `dist/` liegt `NalasZauberwald-2.0-test.apk` (Test-Version); die übrigen Dateien dort sind noch Version 1.3.
 
 Alle Daten bleiben auf dem Gerät (`localStorage`). Datensparsam nach revDSG.
