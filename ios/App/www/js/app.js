@@ -1,19 +1,26 @@
-/* app.js – Bildschirme und Session-Ablauf.
-   Ruhig, klares Ende, ohne Streaks/Zeitdruck/Push. Alles lokal. */
+/* app.js – Bildschirme und Ablauf.
+   Rahmen: «Nalas Zauberwald» – eine Wanderung über die Weltkarte, jedes
+   Minispiel ist ein Ort im Wald. Ruhig, klares Ende, ohne Streaks,
+   Zeitdruck-Alarm oder Push. Alles bleibt lokal auf dem Gerät. */
 
 (() => {
   const app = document.getElementById('app');
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const html = (tag, cls, inner) => { const e = el(tag, cls); e.innerHTML = inner; return e; };
   const daten = () => Store.get();
 
-  // Nala mit Sprechblase – freundlich, liest den Text auch vor
-  function nalaSagt(text, emoji = '🐿️', vorlesen = true) {
-    const box = el('div', 'zentriert');
-    box.style.display = 'flex'; box.style.flexDirection = 'column'; box.style.gap = '14px'; box.style.alignItems = 'center';
-    box.append(el('div', 'nala', emoji));
-    box.append(el('div', 'sprechblase', text));
-    if (vorlesen) Audio.sprich(text);
-    return box;
+  // Tippen: erst kurz nach dem Bildschirmwechsel aktiv (verhindert versehentliche Doppel-Tipper)
+  let schirmZeit = 0;
+  function tap(e, fn) {
+    e.addEventListener('click', (ev) => { if (performance.now() - schirmZeit < 320) return; Audio.tipp(); fn(ev); });
+    return e;
+  }
+  function knopf(text, icon, cls, fn) {
+    const b = el('button', 'knopf ' + (cls || ''));
+    b.innerHTML = (icon ? Art.icon(icon) : '') + '<span></span>';
+    b.querySelector('span').textContent = text;
+    if (fn) tap(b, fn);
+    return b;
   }
 
   // Audio-Einstellungen aus Speicher laden
@@ -21,116 +28,139 @@
   Audio.setSprache(daten().spracheAn);
   Audio.setStimme(daten().stimmeName);
   Music.setEnabled(daten().musikAn);
+  Natur.setEnabled(daten().naturAn !== false);
 
-  function leeren() { app.innerHTML = ''; Audio.stopp(); }
+  function leeren() {
+    Games.abbrechen(); Audio.stopp();
+    app.innerHTML = '';
+    document.querySelectorAll('.dialog-huelle, .sticker-flieger').forEach((x) => x.remove());
+    schirmZeit = performance.now();
+  }
+  // Neuer Bildschirm mit Hintergrund-Szene
+  function schirm(cls, szene) {
+    leeren();
+    const s = el('div', 'screen ' + (cls || ''));
+    if (szene) s.append(html('div', 'szene', Art.szene(szene)), ambiente(szene));
+    app.append(s);
+    return s;
+  }
+  // Lebendige Stimmung über der Szene: Glühwürmchen, Wolken, Blasen (wenige, leichte Ebenen)
+  function ambiente(szene) {
+    const a = el('div', 'ambiente');
+    const z = (min, max) => min + Math.random() * (max - min);
+    const neu = (cls, n, fn) => { for (let i = 0; i < n; i++) { const e = el('i', cls); fn(e, i); a.append(e); } };
+    const hell = szene === 'wiese' || szene === 'blumen' || szene === 'bach';
+    if (hell) {
+      neu('wo', 2, (e, i) => { e.style.top = (4 + i * 9) + '%'; e.style.setProperty('--gr', (1.3 + i * 0.6).toFixed(1)); e.style.animationDuration = (70 + i * 30) + 's'; e.style.animationDelay = (-20 - i * 45) + 's'; });
+      neu('po', 5, (e) => { e.style.left = z(5, 95) + '%'; e.style.top = z(45, 95) + '%'; e.style.animationDelay = -z(0, 9) + 's'; });
+    } else if (szene === 'wasser') {
+      neu('bl', 6, (e) => { e.style.left = z(5, 95) + '%'; e.style.animationDelay = -z(0, 9) + 's'; e.style.animationDuration = z(7, 12) + 's'; });
+    } else {
+      neu('gl', 8, (e) => { e.style.left = z(4, 96) + '%'; e.style.top = z(28, 92) + '%'; e.style.animationDelay = -z(0, 7) + 's'; e.style.animationDuration = z(5, 9) + 's'; });
+    }
+    return a;
+  }
+  const zeitSzene = () => ({ morgen: 'wiese', tag: 'wiese', abend: 'abend', nacht: 'feuer' })[Art.tageszeit()];
+
+  // Nala mit Sprechblase – freundlich, liest den Text auch vor
+  function nalaSagt(text, vorlesen = true, cls = '') {
+    const box = el('div', 'nala-sagt ' + cls);
+    box.append(el('div', 'sprechblase', text));
+    box.append(html('div', 'nala-figur', Art.nala()));
+    if (vorlesen) Audio.sprich(text);
+    return box;
+  }
+  const sterneReihe = (n, cls = '') => html('div', 'sterne ' + cls, [0, 1, 2].map((i) => Art.sternSVG(i < n)).join(''));
+  const funkenZahl = (n) => html('span', 'funken-zahl', Art.bild('funke') + `<b>${n}</b>`);
+
+  // Ruhiger Dialog im Spiel-Stil (statt System-Fenster)
+  function dialog(text, jaText, neinText, onJa) {
+    const h = el('div', 'dialog-huelle');
+    const d = el('div', 'dialog');
+    d.append(html('div', 'dialog-nala', Art.nala()), el('p', null, text));
+    const r = el('div', 'reihe');
+    r.append(knopf(neinText, null, '', () => h.remove()), knopf(jaText, null, 'zweit', () => { h.remove(); onJa(); }));
+    d.append(r); h.append(d); document.body.append(h);
+  }
+
+  // ============================================================
+  // TITEL
+  // ============================================================
+  function titel() {
+    const s = schirm('titel-screen', zeitSzene());
+    Music.play('menu'); Natur.set(Art.tageszeit());
+    s.append(html('h1', 'logo', '<span>Nalas</span><b>Zauberwald</b>'));
+    s.append(html('div', 'titel-nala winkt', Art.nala()));
+    s.append(knopf('Spielen', 'play', 'gross sonne puls', () => FX.wechsel(() => (Store.aktivesProfil() && Store.profile().length === 1 ? start() : loginScreen()))));
+    s.append(el('div', 'titel-fuss', 'Konzentration · Rechnen · Lesen'));
+  }
 
   // ============================================================
   // LOGIN / PROFILE (einfach, lokal, ohne Server)
   // ============================================================
   function loginScreen() {
-    leeren();
-    Music.play('menu');
     if (Store.profile().length === 0) { profilErstellenScreen(); return; }
-    const s = el('div', 'screen');
-    s.append(el('h1', 'zentriert', 'Nalas Waldschule'));
-    s.append(el('div', 'sprechblase', 'Wer möchte heute üben?'));
-    const grid = el('div', 'kacheln');
-    Store.profile().forEach(p => {
-      const k = el('div', 'kachel');
-      k.append(el('span', 'emoji', p.avatar));
-      const t = el('div');
-      t.append(el('div', 'kachel-name', p.name));
-      t.append(el('div', 'mini', `⭐ ${p.punkte} · Stufe ${1 + Math.floor(p.punkte/200)}`));
+    const s = schirm('menue-screen', zeitSzene());
+    Music.play('menu'); Natur.set(Art.tageszeit());
+    s.append(el('h1', 'titel-zeile', 'Wer spielt heute?'));
+    const grid = el('div', 'profil-liste');
+    Store.profile().forEach((p, i) => {
+      const k = el('button', 'profil-karte');
+      k.style.animationDelay = i * 70 + 'ms';
+      k.append(html('span', 'avatar', Art.avatar(p.avatar)));
+      const t = el('span', 'profil-info');
+      t.append(el('b', null, p.name));
+      t.append(html('span', 'mini', `Stufe ${1 + Math.floor(p.punkte / 200)} · ${p.punkte} Lichtfunken`));
       k.append(t);
-      k.addEventListener('pointerdown', () => { Audio.tipp(); Store.profilWaehlen(p.id); start(); });
+      tap(k, () => { Store.profilWaehlen(p.id); FX.wechsel(start); });
       grid.append(k);
     });
     s.append(grid);
-    const neu = el('button', 'knopf zweit', '➕ Neues Kind');
-    neu.addEventListener('pointerdown', () => { Audio.tipp(); profilErstellenScreen(); });
-    s.append(neu);
-    app.append(s);
+    s.append(knopf('Neues Kind', 'plus', 'zweit', profilErstellenScreen));
   }
 
   function profilErstellenScreen() {
-    leeren();
-    Music.play('menu');
-    const s = el('div', 'screen');
-    s.append(el('h1', 'zentriert', 'Neues Kind'));
-    s.append(nalaSagt('Wie heisst du? Wähle ein Tier für dich.', '🐿️', false));
-
-    const nameInput = el('input');
+    const s = schirm('menue-screen', zeitSzene());
+    Music.play('menu'); Natur.set(Art.tageszeit());
+    s.append(el('h1', 'titel-zeile', 'Wer bist du?'));
+    const karte = el('div', 'tafel');
+    const nameInput = el('input', 'eingabe');
     nameInput.type = 'text'; nameInput.placeholder = 'Dein Name'; nameInput.maxLength = 20;
-    nameInput.style.cssText = 'width:100%;min-height:60px;font-size:1.3rem;text-align:center;padding:10px 14px;border-radius:18px;border:3px solid #e6efe9;font-family:var(--font-titel);';
-    s.append(nameInput);
+    nameInput.setAttribute('aria-label', 'Dein Name');
+    karte.append(nameInput);
+    karte.append(el('p', 'label', 'Wähle dein Tier'));
 
     let gewaehlt = Store.AVATARE[0];
-    const grid = el('div', 'album');
-    const zellen = [];
+    const grid = el('div', 'avatar-wahl');
     Store.AVATARE.forEach((av, i) => {
-      const a = el('div', 'abzeichen', av);
-      a.style.cursor = 'pointer';
-      if (i === 0) a.style.outline = '4px solid var(--blatt)';
+      const a = html('button', 'avatar-knopf' + (i === 0 ? ' aktiv' : ''), Art.avatar(av));
       a.addEventListener('pointerdown', () => {
-        Audio.tipp(); gewaehlt = av;
-        zellen.forEach(z => z.style.outline = 'none');
-        a.style.outline = '4px solid var(--blatt)';
+        Audio.plopp(1 + i * 0.04); gewaehlt = av;
+        grid.querySelectorAll('.aktiv').forEach((z) => z.classList.remove('aktiv'));
+        a.classList.add('aktiv');
       });
-      zellen.push(a); grid.append(a);
+      grid.append(a);
     });
-    s.append(grid);
-
-    const los = el('button', 'knopf gross', 'Los! ▶');
-    los.addEventListener('pointerdown', () => {
-      Audio.tipp();
-      const name = nameInput.value.trim() || 'Kind';
-      Store.profilErstellen(name, gewaehlt);
-      start();
-    });
-    s.append(los);
-
-    if (Store.profile().length > 0) {
-      const zurueck = el('button', 'knopf zweit klein', '✕ Zurück');
-      zurueck.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
-      s.append(zurueck);
-    }
-    app.append(s);
-  }
-
-  // Kopfzeile mit Profil, Punkten und Stufe
-  function profilKopf() {
-    const p = Store.aktivesProfil();
-    const box = el('div', 'karte');
-    box.style.cssText = 'display:flex;align-items:center;gap:14px;padding:14px 18px;';
-    const av = el('div', null, p ? p.avatar : '🐿️'); av.style.fontSize = '2.4rem';
-    const mitte = el('div'); mitte.style.flex = '1';
-    mitte.append(el('div', null, p ? p.name : 'Gast'));
-    mitte.append(el('div', 'mini', `⭐ ${Store.getPunkte()} Punkte · 🌟 Stufe ${Store.rang()}`));
-    const wechseln = el('button', 'knopf zweit klein', '🔄');
-    wechseln.title = 'Profil wechseln';
-    wechseln.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
-    box.append(av, mitte, wechseln);
-    return box;
+    karte.append(grid);
+    s.append(karte);
+    s.append(knopf('Los geht’s!', 'play', 'gross sonne', () => {
+      Store.profilErstellen(nameInput.value.trim() || 'Kind', gewaehlt);
+      FX.wechsel(start);
+    }));
+    if (Store.profile().length > 0) s.append(knopf('Zurück', null, 'zweit klein', loginScreen));
   }
 
   // Avatar mit Fortschrittsring zur nächsten Stufe + Stufen-Abzeichen
-  let ringId = 0;
   function avatarRing(p) {
     const punkte = p ? p.punkte : 0;
-    const rang = 1 + Math.floor(punkte / 200);
     const prog = (punkte % 200) / 200;
-    const wrap = el('div', 'avatar-ring');
-    const R = 34, C = 2 * Math.PI * R, gid = 'ring' + (++ringId);
-    wrap.innerHTML =
-      `<svg width="76" height="76" viewBox="0 0 76 76">
-         <circle cx="38" cy="38" r="${R}" fill="none" stroke="rgba(63,138,95,.12)" stroke-width="6"/>
-         <circle cx="38" cy="38" r="${R}" fill="none" stroke="url(#${gid})" stroke-width="6" stroke-linecap="round"
-                 stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-prog)).toFixed(1)}"/>
-         <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
-           <stop offset="0" stop-color="#3f8a5f"/><stop offset="1" stop-color="#f7c948"/></linearGradient></defs>
-       </svg>`;
-    wrap.append(el('div', 'gesicht', p ? p.avatar : '🐿️'));
-    wrap.append(el('div', 'stufe-badge', String(rang)));
+    const R = 34, C = 2 * Math.PI * R;
+    const wrap = html('div', 'avatar-ring',
+      `<svg class="ring" viewBox="0 0 76 76"><circle cx="38" cy="38" r="${R}" fill="#fff8e6" stroke="rgba(74,53,38,.18)" stroke-width="6"/>
+       <circle cx="38" cy="38" r="${R}" fill="none" stroke="#ffb52e" stroke-width="6" stroke-linecap="round" transform="rotate(-90 38 38)"
+               stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - prog)).toFixed(1)}"/></svg>`);
+    wrap.append(html('div', 'gesicht', Art.avatar(p ? p.avatar : 'nala')));
+    wrap.append(el('div', 'stufe-badge', String(1 + Math.floor(punkte / 200))));
     return wrap;
   }
 
@@ -138,98 +168,167 @@
   function tabbar(active) {
     const bar = el('div', 'tabbar');
     const mk = (id, icon, label, fn) => {
-      const b = el('button', 'tabbtn' + (active === id ? ' aktiv' : ''));
-      b.innerHTML = `<span class="ti">${icon}</span>`;
-      b.append(document.createTextNode(label));
-      b.addEventListener('pointerdown', () => { Audio.tipp(); fn(); });
+      const b = html('button', 'tabbtn' + (active === id ? ' aktiv' : ''), Art.icon(icon) + `<span>${label}</span>`);
+      tap(b, fn);
       return b;
     };
-    bar.append(
-      mk('ueben', '🏡', 'Start', () => start()),
-      mk('album', '🎖️', 'Album', () => albumZeigen()),
-      mk('eltern', '👪', 'Eltern', () => pinAbfrage()),
-    );
+    bar.append(mk('karte', 'karte', 'Wald', () => start()), mk('album', 'album', 'Album', () => albumZeigen()), mk('eltern', 'eltern', 'Eltern', () => pinAbfrage()));
     return bar;
   }
 
-  // Konfetti für Erfolgsmomente (Peak)
-  function konfetti() {
-    const farben = ['#3f8a5f', '#f7c948', '#e0894a', '#7c6cd8', '#4a7fe0'];
-    const box = el('div', 'konfetti');
-    for (let i = 0; i < 30; i++) {
-      const s = el('i');
-      s.style.left = Math.random() * 100 + '%';
-      s.style.background = farben[i % farben.length];
-      s.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
-      s.style.animationDelay = (Math.random() * 0.3) + 's';
-      box.append(s);
-    }
-    document.body.append(box);
-    setTimeout(() => box.remove(), 3400);
-  }
+  // ============================================================
+  // WELTKARTE (Home)
+  // ============================================================
+  const ORTE = { pilz: [105, 385], echo: [314, 468], gleich: [110, 590], sort: [300, 690], zahlen: [120, 800], woerter: [300, 905], finde: [110, 1010], geschichte: [270, 1130] };
+  let kartePos = null;   // gemerkte Scroll-Position
 
-  // ============================================================
-  // STARTBILDSCHIRM (Home)
-  // ============================================================
   function start() {
-    leeren();
-    Music.play('menu');
     const p = Store.aktivesProfil();
-    const punkte = Store.getPunkte();
-    const s = el('div', 'screen hat-tabbar');
+    if (!p) { loginScreen(); return; }
+    const zeit = Art.tageszeit();
+    const s = schirm('karte-screen zeit-' + zeit);
+    Music.play('menu'); Natur.set(zeit);
 
-    // Hero-Kopf: Profil, Punkte (Wert betont), Fortschritt zur nächsten Stufe
-    const hero = el('div', 'hero karte');
-    hero.append(avatarRing(p));
-    const info = el('div', 'info');
-    info.append(el('div', 'name', p ? p.name : 'Gast'));
-    const stat = el('div', 'punkte-stat');
-    stat.append(el('span', 'punkte-num', String(punkte)));
-    stat.append(el('span', 'punkte-lab', 'Punkte'));
-    info.append(stat);
-    const linie = el('div', 'fortschritt-linie'); const sp = el('span');
-    sp.style.width = Math.round(((punkte % 200) / 200) * 100) + '%'; linie.append(sp); info.append(linie);
-    info.append(el('div', 'mini', `Noch ${200 - (punkte % 200)} bis Stufe ${Store.rang() + 1}`));
-    hero.append(info);
-    const wechseln = el('button', 'icon-knopf', '🔄');
-    wechseln.setAttribute('aria-label', 'Profil wechseln');
-    wechseln.addEventListener('pointerdown', () => { Audio.tipp(); loginScreen(); });
-    hero.append(wechseln);
-    s.append(hero);
+    const scroll = el('div', 'karte-scroll');
+    const karte = el('div', 'karte');
+    const orte = Games.katalog.map((g) => ({ g, x: ORTE[g.id][0], y: ORTE[g.id][1] }));
+    karte.innerHTML = Art.karte(zeit, orte);
+    const H = Art.KARTE_H;
 
-    // Primärer CTA
-    const losKnopf = el('button', 'knopf gross', '▶  Heute üben');
-    losKnopf.addEventListener('pointerdown', () => { Audio.tipp(); sessionStarten(); });
-    s.append(losKnopf);
-
-    // Einzelne Spiele – kategoriefarbig
-    s.append(el('div', 'label', 'Einzelne Spiele'));
-    const kacheln = el('div', 'kacheln');
-    Games.katalog.forEach(g => {
-      const k = el('div', 'kachel k-' + g.bereich);
-      k.append(el('span', 'emoji', g.emoji));
-      k.append(el('span', 'kachel-name', g.name));
-      k.addEventListener('pointerdown', () => { Audio.tipp(); einzelspiel(g.id); });
-      kacheln.append(k);
+    // Nala wartet beim nächsten Ort ohne Sterne (sonst beim Baumhaus)
+    const ziel = orte.find((o) => !Store.getSterne(o.g.id));
+    orte.forEach((o, i) => {
+      const n = Store.getSterne(o.g.id);
+      const b = el('button', 'ort' + (n ? ' besucht' : '') + (ziel === o ? ' ziel' : ''));
+      b.style.left = (o.x / 400 * 100) + '%'; b.style.top = (o.y / H * 100) + '%';
+      b.style.setProperty('--farbe', o.g.farbe); b.style.animationDelay = (-i * 0.45) + 's';
+      b.append(html('span', 'ort-bild', Art.bild(o.g.bild)), sterneReihe(n, 'ort-sterne'), el('span', 'ort-name', o.g.ort));
+      b.setAttribute('aria-label', o.g.ort + ': ' + o.g.name);
+      tap(b, () => ortKarte(o.g));
+      karte.append(b);
     });
-    s.append(kacheln);
+    const nx = ziel ? ziel.x + (ziel.x < 200 ? 78 : -78) : 262, ny = ziel ? ziel.y - 6 : 236;
+    const nala = html('div', 'karte-nala', Art.nala());
+    nala.style.left = (nx / 400 * 100) + '%'; nala.style.top = (ny / H * 100) + '%';
+    if (ziel && ziel.x > 200) nala.classList.add('schaut-rechts');
+    karte.append(nala);
+    const amb = ambiente(zeit === 'nacht' || zeit === 'abend' ? 'wald' : 'wiese');
+    amb.classList.add('karte-amb');
+    karte.append(amb);
+    scroll.append(karte);
+    s.append(scroll);
 
-    app.append(s);
-    app.append(tabbar('ueben'));
+    // Kopf: Profil, Lichtfunken, Sterne
+    const kopf = el('div', 'kopf-hud');
+    const prof = el('button', 'kopf-profil');
+    prof.append(avatarRing(p));
+    const info = el('span', 'kopf-info');
+    info.append(el('b', null, p.name), el('span', 'mini', `Noch ${200 - (p.punkte % 200)} bis Stufe ${Store.rang() + 1}`));
+    prof.append(info);
+    prof.setAttribute('aria-label', 'Profil wechseln');
+    tap(prof, loginScreen);
+    kopf.append(prof);
+    const zahlen = el('div', 'kopf-zahlen');
+    zahlen.append(funkenZahl(p.punkte), html('span', 'funken-zahl', Art.sternSVG(true) + `<b>${Store.sterneGesamt()}</b>`));
+    kopf.append(zahlen);
+    s.append(kopf);
+
+    // Fuss: Abenteuer starten + Navigation
+    const fuss = el('div', 'fuss');
+    fuss.append(knopf('Abenteuer starten', 'play', 'gross sonne puls', () => FX.wechsel(sessionStarten)));
+    fuss.append(tabbar('karte'));
+    s.append(fuss);
+
+    // Zur richtigen Stelle scrollen
+    requestAnimationFrame(() => {
+      const k = karte.getBoundingClientRect().height;
+      scroll.scrollTop = kartePos != null ? kartePos : Math.max(0, (ny / H) * k - scroll.clientHeight * 0.55);
+    });
+    scroll.addEventListener('scroll', () => { kartePos = scroll.scrollTop; }, { passive: true });
+  }
+
+  const BEREICH = { aufmerksamkeit: 'Aufmerksamkeit', gedaechtnis: 'Gedächtnis', rechnen: 'Rechnen', lesen: 'Lesen' };
+  // Karte eines Ortes: was man dort spielt
+  function ortKarte(g) {
+    const h = el('div', 'dialog-huelle');
+    const d = el('div', 'dialog ort-dialog');
+    d.style.setProperty('--farbe', g.farbe);
+    d.append(html('div', 'ort-gross', Art.bild(g.bild)));
+    d.append(el('div', 'ort-ueber', g.ort), el('h2', null, g.name), el('p', null, g.kurz));
+    const chips = el('div', 'reihe mitte');
+    chips.append(el('span', 'marke', BEREICH[g.bereich]), el('span', 'marke', 'Stufe ' + Store.startLevel(g.id)));
+    d.append(chips, sterneReihe(Store.getSterne(g.id), 'gross'));
+    d.append(knopf('Spielen', 'play', 'gross sonne', () => { h.remove(); FX.wechsel(() => einzelspiel(g.id)); }));
+    const zu = html('button', 'rund-knopf zu', Art.icon('x')); zu.setAttribute('aria-label', 'Schliessen');
+    tap(zu, () => h.remove());
+    d.append(zu); h.append(d);
+    h.addEventListener('click', (e) => { if (e.target === h) h.remove(); });
+    document.body.append(h);
+    Audio.sprich(g.ort + '. ' + g.kurz);
   }
 
   // ============================================================
-  // SESSION: 3–4 Spiele nacheinander (10–15 Min.)
+  // SPIEL-RAHMEN: Szene + Kopfleiste + Spielfeld
+  // ============================================================
+  function spielRahmen(g, beimVerlassen) {
+    const s = schirm('spiel-screen sz-' + g.szene, g.szene);
+    Music.play('spiel'); Natur.set(g.natur); Audio.serieNeu();
+    const kopf = el('div', 'hud');
+    const raus = html('button', 'rund-knopf', Art.icon('x')); raus.setAttribute('aria-label', 'Spiel verlassen');
+    tap(raus, () => dialog('Möchtest du aufhören?', 'Aufhören', 'Weiterspielen', () => FX.wechsel(beimVerlassen)));
+    const mitte = el('div', 'hud-mitte');
+    mitte.append(el('div', 'hud-titel', g.name));
+    const balken = html('div', 'hud-balken', '<span></span>' + Art.sternSVG(true));
+    mitte.append(balken);
+    const mini = html('div', 'hud-nala', Art.nala());
+    kopf.append(raus, mitte, mini);
+    const feld = el('div', 'feld');
+    s.append(kopf, feld);
+    const hud = {
+      schritt(i, n) { balken.firstChild.style.transform = `scaleX(${Math.max(0.02, Math.min(1, i / n))})`; },
+      nala(stimmung) { FX.anim(mini, stimmung, 700); },
+    };
+    hud.schritt(0, 1);
+    return { feld, hud, s };
+  }
+
+  // Ergebnis nach einem Spiel: Sterne, Lichtfunken, Lob
+  function ergebnis(g, erg, gained, pr, knopfText, weiter) {
+    const n = Store.sterneFuer(erg.correct || 0, erg.total || 1);
+    Store.sterneSetzen(g.id, n);
+    const s = schirm('ergebnis-screen sz-' + g.szene, g.szene);
+    Music.play('intro'); Natur.set(g.natur);
+    const lob = pr.aufgestiegen ? `Wow, du bist jetzt auf Stufe ${pr.rang}!` : Audio.lob();
+    s.append(el('div', 'spacer'));
+    s.append(el('h1', 'titel-zeile', 'Geschafft!'));
+    const st = sterneReihe(0, 'riesig'); s.append(st);
+    s.append(nalaSagt(lob, true, 'jubelt'));
+    const plus = html('div', 'plus-funken', Art.bild('funke') + `<b>+${gained}</b><span>Lichtfunken</span>`);
+    s.append(plus);
+    const k = knopf(knopfText, 'play', 'gross sonne', weiter);
+    s.append(k, el('div', 'spacer'));
+    // Sterne ploppen nacheinander auf
+    for (let i = 0; i < n; i++) setTimeout(() => {
+      if (!st.isConnected) return;
+      st.children[i].outerHTML = Art.sternSVG(true);
+      st.children[i].classList.add('plopp'); Audio.sternKlang(i); FX.funkenAn(st.children[i], { n: 10 });
+    }, 350 + i * 420);
+    if (pr.aufgestiegen) setTimeout(() => { if (st.isConnected) FX.konfetti(70); }, 400);
+  }
+
+  // ============================================================
+  // ABENTEUER: 3–4 Orte nacheinander (10–15 Min.)
   // ============================================================
   function tagesAuswahl() {
     // Mischung: 1 Aufmerksamkeit + 1 Schulstoff + 1 Gedächtnis (+ optional)
-    const auf = ['pilz','sort','finde'];
-    const schule = ['zahlen','woerter'];
-    const ged = ['echo','gleich','geschichte'];
-    const wahl = (arr) => arr[Math.floor(Math.random()*arr.length)];
-    const liste = [wahl(auf), wahl(schule), wahl(ged), wahl(auf.concat(schule,ged))];
-    // Duplikate direkt hintereinander vermeiden
-    return liste.filter((id, i) => i === 0 || id !== liste[i-1]).slice(0, 4);
+    const auf = ['pilz', 'sort', 'finde'];
+    const schule = ['zahlen', 'woerter'];
+    const ged = ['echo', 'gleich', 'geschichte'];
+    const wahl = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const liste = [wahl(auf), wahl(schule), wahl(ged)];
+    const rest = auf.concat(schule, ged).filter((id) => !liste.includes(id));
+    liste.push(wahl(rest));
+    return liste;
   }
 
   function sessionStarten() {
@@ -239,69 +338,33 @@
     let idx = 0;
     let punkteSession = 0;
 
-    // Begrüssung durch Nala
-    leeren();
-    Music.play('intro');
-    const intro = el('div', 'screen zentriert');
-    intro.append(el('div', 'spacer'));
-    intro.append(nalaSagt(`Schön, dass du übst! Heute spielen wir ${spiele.length} Spiele zusammen.`, '🐿️'));
-    intro.append(el('div', 'spacer'));
-    app.append(intro);
-
-    setTimeout(naechstesSpiel, 2200);
+    // Begrüssung durch Nala: der Weg von heute
+    const s = schirm('menue-screen', zeitSzene());
+    Music.play('intro'); Natur.set(Art.tageszeit());
+    s.append(el('div', 'spacer'));
+    s.append(nalaSagt(`Schön, dass du da bist! Heute besuchen wir ${spiele.length} Orte im Zauberwald.`));
+    const weg = el('div', 'weg');
+    spiele.forEach((id, i) => { const g = Games.byId(id); const o = html('div', 'weg-ort', Art.bild(g.bild)); o.style.animationDelay = (300 + i * 160) + 'ms'; weg.append(o); });
+    s.append(weg);
+    s.append(knopf('Los geht’s!', 'play', 'gross sonne puls', () => FX.wechsel(naechstesSpiel)));
+    s.append(knopf('Zurück', null, 'zweit klein', () => FX.wechsel(start)));
+    s.append(el('div', 'spacer'));
 
     function naechstesSpiel() {
       if (idx >= spiele.length) { abschluss(); return; }
       const g = Games.byId(spiele[idx]);
-      leeren();
-      Music.play('spiel');
-      const s = el('div', 'screen');
-
-      const kopf = el('div', 'spiel-kopf');
-      const titel = el('h2', null, `${g.emoji} ${g.name}`);
-      const raus = el('button', 'knopf zweit klein', '✕');
-      raus.addEventListener('pointerdown', () => { Audio.tipp(); if (confirmRuhig()) start(); });
-      kopf.append(titel, raus);
-      s.append(kopf);
-
-      const dots = el('div', 'fortschritt');
-      spiele.forEach((_, i) => {
-        const p = el('div', 'punkt');
-        if (i < idx) p.classList.add('fertig');
-        if (i === idx) p.classList.add('aktiv');
-        dots.append(p);
-      });
-      s.append(dots);
-
-      const feld = el('div', 'karte'); feld.style.flex = '1'; feld.style.display = 'flex'; feld.style.flexDirection = 'column'; feld.style.gap = '14px';
-      s.append(feld);
-      app.append(s);
-
+      const { feld, hud } = spielRahmen(g, start);
       const level = Store.startLevel(g.id); // Progression: nie leichter als der Fortschritts-Boden
-      g.spielen(feld, level, (ergebnis) => {
-        Store.setLevel(g.id, ergebnis.newLevel);
-        bereichspunkte[ergebnis.bereich] = (bereichspunkte[ergebnis.bereich] || 0) + (ergebnis.correct || 0);
-        const gained = (ergebnis.correct || 0) * 10;
+      g.spielen(feld, level, (erg) => {
+        Store.setLevel(g.id, erg.newLevel);
+        bereichspunkte[erg.bereich] = (bereichspunkte[erg.bereich] || 0) + (erg.correct || 0);
+        const gained = (erg.correct || 0) * 10;
         punkteSession += gained;
-        Store.punkteGeben(gained);
+        const pr = Store.punkteGeben(gained);
         idx++;
-        zwischenLob(naechstesSpiel, gained);
-      });
-    }
-
-    function zwischenLob(weiter, gained) {
-      if (idx >= spiele.length) { weiter(); return; }
-      leeren();
-      Music.play('intro');
-      const s = el('div', 'screen zentriert');
-      s.append(el('div', 'spacer'));
-      s.append(nalaSagt(Audio.lob() + ' Kommst du mit zum nächsten Spiel?', '🐿️'));
-      if (gained) s.append(el('div', 'punkte-plus', `+${gained} ⭐`));
-      const k = el('button', 'knopf gross sonne', 'Weiter ▶');
-      k.addEventListener('pointerdown', () => { Audio.tipp(); weiter(); });
-      s.append(k);
-      s.append(el('div', 'spacer'));
-      app.append(s);
+        const letztes = idx >= spiele.length;
+        FX.wechsel(() => ergebnis(g, erg, gained, pr, letztes ? 'Zur Belohnung' : 'Weiter zum nächsten Ort', () => FX.wechsel(naechstesSpiel)));
+      }, hud);
     }
 
     function abschluss() {
@@ -310,231 +373,161 @@
       const sticker = Store.abzeichenGeben();
       const bonus = 50; punkteSession += bonus;
       const pr = Store.punkteGeben(bonus); // enthält evtl. Stufenaufstieg
-      Audio.jubel();
-      Music.play('finale');
 
-      leeren();
-      konfetti();
-      const s = el('div', 'screen zentriert');
-      s.append(el('div', 'spacer'));
-      s.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}! Ich bin stolz auf dich! 💛`
-                                        : 'Du hast heute toll geübt. Ich bin stolz auf dich! 💛', '🎉'));
-      const card = el('div', 'karte zentriert');
-      card.style.display = 'flex'; card.style.flexDirection = 'column'; card.style.gap = 'var(--s3)'; card.style.alignItems = 'center';
-      const stEl = el('div', 'sticker-gross', sticker);
-      card.append(stEl);
-      card.append(el('div', 'label', 'Neuer Sticker!'));
-      card.append(el('div', 'punkte-plus', `+${punkteSession} ⭐`));
-      // Fortschritt zur nächsten Stufe
-      const linie = el('div', 'fortschritt-linie'); linie.style.width = '100%';
-      const sp = el('span'); sp.style.width = Math.round(((pr.punkte % 200) / 200) * 100) + '%'; linie.append(sp);
-      card.append(linie);
-      card.append(el('div', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} bis Stufe ${pr.rang + 1}`));
-      s.append(card);
-      if (pr.aufgestiegen) Audio.sprich('Super! Du hast eine neue Stufe erreicht!');
+      const e = schirm('ergebnis-screen', zeitSzene());
+      Music.play('finale'); Natur.set(Art.tageszeit());
+      Audio.jubel(); FX.konfetti();
+      e.append(el('div', 'spacer'));
+      e.append(el('h1', 'titel-zeile', 'Abenteuer geschafft!'));
+      e.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}! Ich bin stolz auf dich!`
+                                        : 'Du hast heute toll geübt. Ich bin stolz auf dich!', true, 'jubelt'));
+      const card = el('div', 'tafel zentriert');
+      const stEl = html('div', 'sticker-gross', Art.avatar(sticker));
+      card.append(el('div', 'label', 'Dein neuer Sticker'), stEl);
+      card.append(html('div', 'plus-funken', Art.bild('funke') + `<b>+${punkteSession}</b><span>Lichtfunken</span>`));
+      const linie = el('div', 'fortschritt-linie'); const sp = el('span'); sp.style.width = Math.round(((pr.punkte % 200) / 200) * 100) + '%'; linie.append(sp);
+      card.append(linie, el('div', 'mini', `Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} Lichtfunken bis Stufe ${pr.rang + 1}`));
+      e.append(card);
       // Sticker selber ins Album kleben – er fliegt von hier an seinen Platz
-      const kleben = el('button', 'knopf gross sonne', '✨ Ins Album kleben');
       const neuIndex = (Store.aktivesProfil() || { abzeichen: [1] }).abzeichen.length - 1;
-      const zumAlbum = () => { Audio.tipp(); albumZeigen({ neuIndex, von: stEl.getBoundingClientRect() }); };
-      kleben.addEventListener('pointerdown', zumAlbum);
-      stEl.addEventListener('pointerdown', zumAlbum);
-      s.append(kleben);
-      s.append(el('div', 'spacer'));
-      app.append(s);
+      const zumAlbum = () => albumZeigen({ neuIndex, von: stEl.getBoundingClientRect() });
+      e.append(knopf('Ins Album kleben', 'album', 'gross sonne puls', zumAlbum));
+      tap(stEl, zumAlbum);
+      e.append(el('div', 'spacer'));
     }
   }
 
-  // Ruhige Abbruch-Frage ohne Druck
-  function confirmRuhig() { return window.confirm('Möchtest du aufhören?'); }
-
-  // Einzelnes Spiel aus der Kachelwahl
+  // Einzelnes Spiel von der Karte
   function einzelspiel(id) {
     const g = Games.byId(id);
-    leeren();
-    Music.play('spiel');
-    const s = el('div', 'screen');
-    const kopf = el('div', 'spiel-kopf');
-    kopf.append(el('h2', null, `${g.emoji} ${g.name}`));
-    const raus = el('button', 'knopf zweit klein', '✕');
-    raus.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
-    kopf.append(raus);
-    s.append(kopf);
-    const feld = el('div', 'karte'); feld.style.flex = '1'; feld.style.display='flex'; feld.style.flexDirection='column'; feld.style.gap='14px';
-    s.append(feld);
-    app.append(s);
-
+    const { feld, hud } = spielRahmen(g, start);
     const level = Store.startLevel(id);
-    g.spielen(feld, level, (ergebnis) => {
-      Store.setLevel(id, ergebnis.newLevel);
-      Store.sessionSpeichern(0, [id], { [ergebnis.bereich]: ergebnis.correct || 0 });
-      const gained = (ergebnis.correct || 0) * 10;
+    g.spielen(feld, level, (erg) => {
+      Store.setLevel(id, erg.newLevel);
+      Store.sessionSpeichern(0, [id], { [erg.bereich]: erg.correct || 0 });
+      const gained = (erg.correct || 0) * 10;
       const pr = Store.punkteGeben(gained);
-      Audio.jubel();
-      Music.play('finale');
-      if (pr.aufgestiegen) konfetti();
-      leeren();
-      const e = el('div', 'screen zentriert');
-      e.append(el('div', 'spacer'));
-      e.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}!` : Audio.lob(), '🐿️'));
-      const card = el('div', 'karte zentriert');
-      card.style.display='flex'; card.style.flexDirection='column'; card.style.gap='var(--s2)'; card.style.alignItems='center';
-      card.append(el('div', 'punkte-plus', `+${gained} ⭐`));
-      card.append(el('p', 'mini', `Insgesamt ${pr.punkte} Punkte · Stufe ${pr.rang}`));
-      e.append(card);
-      const k = el('button', 'knopf gross', '🏡 Zum Start');
-      k.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
-      e.append(k); e.append(el('div','spacer'));
-      app.append(e);
-    });
+      FX.wechsel(() => { ergebnis(g, erg, gained, pr, 'Zurück zum Wald', () => FX.wechsel(start)); Audio.jubel(); });
+    }, hud);
   }
 
   // ============================================================
   // ALBUM
   // ============================================================
   function albumZeigen(opt = {}) {
-    leeren();
-    Music.play('menu');
+    const s = schirm('album-screen', zeitSzene());
+    Music.play('menu'); Natur.set(Art.tageszeit());
     const neu = Number.isInteger(opt.neuIndex) ? opt.neuIndex : -1;
-    const s = el('div', 'screen hat-tabbar');
-    s.append(el('h1', null, 'Mein Album'));
-
     const prof = Store.aktivesProfil() || { abzeichen: [] };
-    const stat = el('div', 'hero karte');
-    stat.append(avatarRing(Store.aktivesProfil()));
-    const info = el('div', 'info');
-    info.append(el('div', 'name', `${prof.abzeichen.length} Abzeichen`));
-    info.append(el('div', 'mini', `⭐ ${Store.getPunkte()} Punkte · Stufe ${Store.rang()}`));
-    stat.append(info);
-    s.append(stat);
-
+    const scroll = el('div', 'album-scroll');
+    scroll.append(el('h1', 'titel-zeile', 'Mein Album'));
+    const buch = el('div', 'tafel buch');
+    buch.append(el('div', 'label', prof.abzeichen.length === 1 ? '1 Sticker gesammelt' : `${prof.abzeichen.length} Sticker gesammelt`));
     const grid = el('div', 'album');
-    const total = Math.max(16, Math.ceil(prof.abzeichen.length / 8) * 8);
+    const total = Math.max(12, Math.ceil((prof.abzeichen.length + 1) / 4) * 4);
     let ziel = null;
     for (let i = 0; i < total; i++) {
       const a = el('div', 'abzeichen');
       a.style.setProperty('--dreh', [-4, 3, -2, 5, -5, 2, 4, -3][i % 8] + 'deg');  // leicht schief geklebt
-      if (prof.abzeichen[i] && i !== neu) a.textContent = prof.abzeichen[i];
+      if (prof.abzeichen[i] && i !== neu) a.innerHTML = Art.avatar(prof.abzeichen[i]);
       else if (i === neu) { a.classList.add('leer', 'ziel'); ziel = a; }
-      else { a.classList.add('leer'); a.textContent = '·'; }
+      else a.classList.add('leer');
       grid.append(a);
     }
-    s.append(grid);
-    app.append(s);
-    app.append(tabbar('album'));
+    buch.append(grid);
+    if (!prof.abzeichen.length) buch.append(el('p', 'mini zentriert', 'Für jedes geschaffte Abenteuer bekommst du einen Sticker.'));
+    scroll.append(buch);
+    s.append(scroll);
+    const fuss = el('div', 'fuss'); fuss.append(tabbar('album')); s.append(fuss);
     if (ziel) stickerFliegt(prof.abzeichen[neu], ziel, opt.von);
   }
 
   // Neuer Sticker fliegt in einem Bogen an seinen Platz im Album und «klebt» dort fest.
   function stickerFliegt(sticker, ziel, von) {
     const fertig = () => {
+      if (!ziel.isConnected) return;
       ziel.classList.remove('leer', 'ziel');
       ziel.classList.add('neu');
-      ziel.textContent = sticker;
+      ziel.innerHTML = Art.avatar(sticker);
       Audio.klebt();
-      glitzer(ziel);
-      setTimeout(() => Audio.sprich('Dein neuer Sticker klebt jetzt in deinem Album!'), 500);
+      FX.funkenAn(ziel, { n: 18 });
+      setTimeout(() => { if (ziel.isConnected) Audio.sprich('Dein neuer Sticker klebt jetzt in deinem Album!'); }, 500);
     };
-    const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    ziel.scrollIntoView({ block: 'center', behavior: ruhig ? 'auto' : 'smooth' });
-    if (ruhig || !Element.prototype.animate) { setTimeout(fertig, 300); return; }
+    ziel.scrollIntoView({ block: 'center', behavior: FX.ruhig() ? 'auto' : 'smooth' });
+    if (FX.ruhig() || !Element.prototype.animate) { setTimeout(fertig, 300); return; }
 
     setTimeout(() => {
+      if (!ziel.isConnected) return;
       const z = ziel.getBoundingClientRect();
-      const start = von && von.width ? von
-        : { left: innerWidth / 2 - 40, top: innerHeight / 2 - 40, width: 80, height: 80 };
-      const sx = start.left + start.width / 2, sy = start.top + start.height / 2;
-      const zx = z.left + z.width / 2, zy = z.top + z.height / 2;
-      const flieger = el('div', 'sticker-flieger', sticker);
+      const st = von && von.width ? von : { left: innerWidth / 2 - 50, top: innerHeight / 2 - 50, width: 100, height: 100 };
+      const sx = st.left + st.width / 2, sy = st.top + st.height / 2;
+      const dx = z.left + z.width / 2 - sx, dy = z.top + z.height / 2 - sy;
+      const flieger = html('div', 'sticker-flieger', Art.avatar(sticker));
       flieger.style.left = sx + 'px'; flieger.style.top = sy + 'px';
       document.body.append(flieger);
-      const dx = zx - sx, dy = zy - sy;
       const bogen = -Math.max(90, Math.abs(dx) * 0.4 + 60);   // Bogen nach oben
-      const klein = Math.min(1, parseFloat(getComputedStyle(ziel).fontSize) / 64);  // Endgrösse = Sticker im Album
+      const klein = (z.width * 0.84) / 110;                    // Endgrösse = Sticker im Album
       Audio.flug();
       const anim = flieger.animate([
-        { transform: 'translate(-50%,-50%) scale(1.5) rotate(0deg)', offset: 0 },
-        { transform: 'translate(-50%,-50%) scale(1.9) rotate(-12deg)', offset: 0.15 },
-        { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5 + bogen}px)) scale(1.3) rotate(200deg)`, offset: 0.55 },
+        { transform: 'translate(-50%,-50%) scale(1.1) rotate(0deg)', offset: 0 },
+        { transform: 'translate(-50%,-50%) scale(1.5) rotate(-12deg)', offset: 0.15 },
+        { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5 + bogen}px)) scale(1.2) rotate(200deg)`, offset: 0.55 },
         { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${klein * 1.25}) rotate(350deg)`, offset: 0.88 },
         { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${klein}) rotate(360deg)`, offset: 1 },
       ], { duration: 1300, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'forwards' });
       // Glitzerspur hinter dem Sticker
       const spur = setInterval(() => {
-        const r = flieger.getBoundingClientRect();
-        const p = el('i', 'spur', '✦');
-        p.style.left = (r.left + r.width / 2) + 'px'; p.style.top = (r.top + r.height / 2) + 'px';
-        document.body.append(p); setTimeout(() => p.remove(), 700);
-      }, 70);
+        const t = anim.currentTime / 1300 || 0, k = Math.min(1, t);
+        FX.funken(sx + dx * k, sy + dy * k + bogen * Math.sin(Math.PI * k), { n: 2, kraft: 60, r: 5, g: 120 });
+      }, 60);
       anim.onfinish = () => { clearInterval(spur); flieger.remove(); fertig(); };
     }, 450);
-  }
-
-  function glitzer(ziel) {
-    const r = ziel.getBoundingClientRect();
-    const box = el('div', 'glitzer');
-    box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + r.height / 2) + 'px';
-    ['#f7c948', '#7c6cd8', '#3f8a5f', '#e0894a', '#4a7fe0', '#f08fb0', '#f7c948', '#3f8a5f'].forEach((c, i) => {
-      const p = el('i', null, '★');
-      const w = (i / 8) * Math.PI * 2;
-      p.style.color = c;
-      p.style.setProperty('--x', Math.cos(w) * 56 + 'px');
-      p.style.setProperty('--y', Math.sin(w) * 56 + 'px');
-      box.append(p);
-    });
-    document.body.append(box);
-    setTimeout(() => box.remove(), 1000);
   }
 
   // ============================================================
   // ELTERN-BEREICH (PIN-geschützt)
   // ============================================================
   function pinAbfrage() {
-    leeren();
-    const s = el('div', 'screen zentriert');
+    const s = schirm('menue-screen', zeitSzene());
     s.append(el('div', 'spacer'));
-    s.append(el('h2', null, '👪 Eltern-Bereich'));
-    s.append(el('p', 'hinweis', 'Bitte PIN eingeben.'));
-    const anzeige = el('div', 'pin-feld', ''); s.append(anzeige);
+    const t = el('div', 'tafel zentriert');
+    t.append(el('h2', null, 'Eltern-Bereich'), el('p', 'mini', 'Bitte PIN eingeben.'));
+    const anzeige = el('div', 'pin-feld', ''); t.append(anzeige);
     let eingabe = '';
     const tasten = el('div', 'pin-tasten');
-    ['1','2','3','4','5','6','7','8','9','←','0','OK'].forEach(t => {
-      const b = el('button', 'knopf zweit', t);
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '←', '0', 'OK'].forEach((z) => {
+      const b = el('button', 'knopf zweit', z);
       b.addEventListener('pointerdown', () => {
         Audio.tipp();
-        if (t === '←') eingabe = eingabe.slice(0, -1);
-        else if (t === 'OK') { if (eingabe === daten().pin) elternBereich(); else { anzeige.textContent = 'Falsch'; eingabe=''; return; } }
-        else if (eingabe.length < 4) eingabe += t;
+        if (z === '←') eingabe = eingabe.slice(0, -1);
+        else if (z === 'OK') { if (eingabe === daten().pin) { elternBereich(); return; } anzeige.textContent = 'Falsch'; FX.anim(anzeige, 'wackel', 500); eingabe = ''; return; }
+        else if (eingabe.length < 4) eingabe += z;
         anzeige.textContent = '•'.repeat(eingabe.length);
       });
       tasten.append(b);
     });
-    s.append(tasten);
-    const zurueck = el('button', 'knopf zweit klein', '✕ Zurück');
-    zurueck.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
-    s.append(zurueck);
-    s.append(el('div', 'spacer'));
-    app.append(s);
+    t.append(tasten);
+    s.append(t, knopf('Zurück', null, 'zweit klein', start), el('div', 'spacer'));
   }
 
   function elternBereich() {
-    leeren();
     const d = daten();
-    const p = Store.aktivesProfil() || { name:'-', sessions:[], statsProBereich:{aufmerksamkeit:0,gedaechtnis:0,rechnen:0,lesen:0}, punkte:0 };
-    const s = el('div', 'screen');
-    const kopf = el('div', 'spiel-kopf');
-    kopf.append(el('h2', null, '👪 Eltern-Bereich'));
-    const raus = el('button', 'knopf zweit klein', '✕');
-    raus.addEventListener('pointerdown', () => { Audio.tipp(); start(); });
+    const p = Store.aktivesProfil() || { name: '-', sessions: [], statsProBereich: { aufmerksamkeit: 0, gedaechtnis: 0, rechnen: 0, lesen: 0 }, punkte: 0 };
+    const s = schirm('eltern-screen');
+    const kopf = el('div', 'eltern-kopf');
+    kopf.append(el('h2', null, 'Eltern-Bereich'));
+    const raus = html('button', 'rund-knopf', Art.icon('x')); raus.setAttribute('aria-label', 'Schliessen');
+    tap(raus, start);
     kopf.append(raus); s.append(kopf);
 
-    s.append(el('p', 'mini', `Aktives Profil: ${p.avatar || ''} ${p.name} · ⭐ ${p.punkte} Punkte · Stufe ${Store.rang()}`));
+    s.append(el('p', 'mini', `Aktives Profil: ${p.name} · ${p.punkte} Lichtfunken · Stufe ${Store.rang()} · ${Store.sterneGesamt()} Sterne`));
 
     // Trainingszeit
-    const heute0 = new Date(); heute0.setHours(0,0,0,0);
-    const heuteSek = p.sessions.filter(x => x.datum >= heute0.getTime()).reduce((a,b)=>a+(b.sekunden||0),0);
-    const wocheSek = p.sessions.filter(x => x.datum >= Date.now()-7*864e5).reduce((a,b)=>a+(b.sekunden||0),0);
-    const info = el('div', 'karte');
-    info.append(el('h3', null, '⏱️ Trainingszeit'));
+    const heute0 = new Date(); heute0.setHours(0, 0, 0, 0);
+    const heuteSek = p.sessions.filter((x) => x.datum >= heute0.getTime()).reduce((a, b) => a + (b.sekunden || 0), 0);
+    const wocheSek = p.sessions.filter((x) => x.datum >= Date.now() - 7 * 864e5).reduce((a, b) => a + (b.sekunden || 0), 0);
+    const info = el('div', 'karte-e');
+    info.append(el('h3', null, 'Trainingszeit'));
     info.append(zeile('Heute', minText(heuteSek)));
     info.append(zeile('Diese Woche', minText(wocheSek)));
     info.append(zeile('Sessions gesamt', String(p.sessions.length)));
@@ -542,100 +535,92 @@
     s.append(el('p', 'mini', 'Richtwert (Pro Juventute): max. 60 Min./Tag Bildschirmzeit für 6–9 Jahre. Empfehlung: 10–15 Min., 3–4× pro Woche.'));
 
     // Fortschritt je Bereich
-    const fort = el('div', 'karte');
-    fort.append(el('h3', null, '📈 Geübt je Bereich'));
-    const bez = { aufmerksamkeit:'Aufmerksamkeit', gedaechtnis:'Gedächtnis', rechnen:'Rechnen', lesen:'Lesen' };
+    const fort = el('div', 'karte-e');
+    fort.append(el('h3', null, 'Geübt je Bereich'));
     const max = Math.max(1, ...Object.values(p.statsProBereich));
-    for (const b in bez) {
-      fort.append(el('p', 'mini', bez[b]));
-      const bal = el('div', 'balken'); const sp = el('span'); sp.style.width = Math.round((p.statsProBereich[b]/max)*100)+'%'; bal.append(sp); fort.append(bal);
+    for (const b in BEREICH) {
+      fort.append(el('p', 'mini', BEREICH[b]));
+      const bal = el('div', 'balken'); const sp = el('span'); sp.style.width = Math.round(((p.statsProBereich[b] || 0) / max) * 100) + '%'; bal.append(sp); fort.append(bal);
     }
-    fort.append(el('p', 'mini', 'Punkte und Stufe motivieren – bewusst ohne Vergleich mit anderen Kindern.'));
+    fort.append(el('p', 'mini', 'Lichtfunken, Sterne und Stufe motivieren – bewusst ohne Vergleich mit anderen Kindern.'));
     s.append(fort);
 
     // Profile verwalten
-    const prof = el('div', 'karte');
-    prof.append(el('h3', null, '👧 Profile'));
-    Store.profile().forEach(pr => {
+    const prof = el('div', 'karte-e');
+    prof.append(el('h3', null, 'Profile'));
+    Store.profile().forEach((pr) => {
       const z = el('div', 'zeile');
-      const links = el('span', null, `${pr.avatar} ${pr.name}` + (pr.id === Store.aktivId() ? '  (aktiv)' : ''));
+      const links = html('span', 'profil-zeile', Art.avatar(pr.avatar));
+      links.append(el('span', null, pr.name + (pr.id === Store.aktivId() ? '  (aktiv)' : '')));
       const rechts = el('div', 'reihe');
-      const w = el('button','knopf zweit klein','Wählen');
-      w.addEventListener('pointerdown', ()=>{ Store.profilWaehlen(pr.id); elternBereich(); });
-      const l = el('button','knopf zweit klein','🗑️');
-      l.addEventListener('pointerdown', ()=>{ if(window.confirm(`Profil "${pr.name}" mit allen Fortschritten löschen?`)){ Store.profilLoeschen(pr.id); if(!Store.aktivesProfil()){ loginScreen(); } else elternBereich(); } });
-      rechts.append(w, l); z.append(links, rechts); prof.append(z);
+      rechts.append(knopf('Wählen', null, 'zweit klein', () => { Store.profilWaehlen(pr.id); elternBereich(); }));
+      rechts.append(knopf('Löschen', null, 'zweit klein', () => dialog(`Profil «${pr.name}» mit allen Fortschritten löschen?`, 'Löschen', 'Abbrechen', () => {
+        Store.profilLoeschen(pr.id); if (!Store.aktivesProfil()) loginScreen(); else elternBereich();
+      })));
+      z.append(links, rechts); prof.append(z);
     });
-    const neu = el('button','knopf zweit klein','➕ Neues Kind');
-    neu.addEventListener('pointerdown', ()=>{ Audio.tipp(); profilErstellenScreen(); });
-    prof.append(neu);
+    prof.append(knopf('Neues Kind', 'plus', 'zweit klein', profilErstellenScreen));
     s.append(prof);
 
     // Schwierigkeitsstufen (Transparenz)
-    const lvl = el('div', 'karte');
-    lvl.append(el('h3', null, '🎚️ Aktuelle Stufen'));
-    Games.katalog.forEach(g => lvl.append(zeile(`${g.emoji} ${g.name}`, 'Stufe ' + Store.getLevel(g.id))));
+    const lvl = el('div', 'karte-e');
+    lvl.append(el('h3', null, 'Aktuelle Stufen'));
+    Games.katalog.forEach((g) => lvl.append(zeile(g.name, `Stufe ${Store.getLevel(g.id)} · ${Store.getSterne(g.id)}/3 Sterne`)));
     s.append(lvl);
 
     // Einstellungen
-    const set = el('div', 'karte');
-    set.append(el('h3', null, '⚙️ Einstellungen'));
-    // Name des aktiven Profils ändern
+    const set = el('div', 'karte-e');
+    set.append(el('h3', null, 'Einstellungen'));
     const nameRow = el('div', 'reihe mitte');
-    const nameInput = el('input'); nameInput.type='text'; nameInput.placeholder='Name des Kindes'; nameInput.value = p.name || '';
-    nameInput.style.cssText='flex:1;min-height:52px;font-size:1.1rem;padding:8px 12px;border-radius:12px;border:2px solid #e6efe9;';
-    const nameBtn = el('button','knopf zweit klein','Speichern');
-    nameBtn.addEventListener('pointerdown', () => { if (Store.aktivesProfil()) { Store.aktivesProfil().name = nameInput.value.trim().slice(0,20) || 'Kind'; Store.speichern(); nameBtn.textContent='✓'; } });
+    const nameInput = el('input', 'eingabe klein'); nameInput.type = 'text'; nameInput.placeholder = 'Name des Kindes'; nameInput.value = p.name || '';
+    nameInput.setAttribute('aria-label', 'Name des Kindes');
+    const nameBtn = knopf('Speichern', null, 'zweit klein', () => { if (Store.aktivesProfil()) { Store.aktivesProfil().name = nameInput.value.trim().slice(0, 20) || 'Kind'; Store.speichern(); nameBtn.querySelector('span').textContent = 'Gespeichert'; } });
     nameRow.append(nameInput, nameBtn); set.append(nameRow);
-    // Ton / Sprache
-    set.append(schalter('🔊 Töne', d.tonAn, (v)=>{ d.tonAn=v; Audio.setTon(v); Store.speichern(); }));
-    set.append(schalter('🗣️ Vorlesen', d.spracheAn, (v)=>{ d.spracheAn=v; Audio.setSprache(v); Store.speichern(); }));
-    set.append(schalter('🎵 Musik', d.musikAn, (v)=>{ d.musikAn=v; Music.setEnabled(v); Store.speichern(); }));
+    set.append(schalter('Spielklänge', d.tonAn, (v) => { d.tonAn = v; Audio.setTon(v); Store.speichern(); }));
+    set.append(schalter('Vorlesen', d.spracheAn, (v) => { d.spracheAn = v; Audio.setSprache(v); Store.speichern(); }));
+    set.append(schalter('Musik', d.musikAn, (v) => { d.musikAn = v; Music.setEnabled(v); Store.speichern(); }));
+    set.append(schalter('Naturklänge (Vögel, Wind, Wasser)', d.naturAn !== false, (v) => { d.naturAn = v; Natur.setEnabled(v); Store.speichern(); }));
     // Stimme fürs Vorlesen wählen (falls Gerätestimmen abrufbar sind)
     const stimmenListe = Audio.stimmen ? Audio.stimmen() : [];
     if (stimmenListe.length) {
-      const row = el('div'); row.style.margin = '12px 0 4px';
-      row.append(el('div', 'mini', '🎙️ Stimme fürs Vorlesen'));
-      const sel = el('select');
-      sel.style.cssText = 'width:100%;min-height:52px;font-size:1rem;margin-top:6px;padding:8px 12px;border-radius:14px;border:2px solid var(--accent-08);background:var(--card);color:var(--ink);';
+      const row = el('div', 'stimme-wahl');
+      row.append(el('div', 'mini', 'Stimme fürs Vorlesen'));
+      const sel = el('select', 'eingabe klein');
+      sel.setAttribute('aria-label', 'Stimme fürs Vorlesen');
       const auto = el('option'); auto.value = ''; auto.textContent = 'Automatisch (beste Stimme)'; sel.append(auto);
-      stimmenListe.forEach(v => { const o = el('option'); o.value = v.name; o.textContent = v.name + (v.lokal ? '' : ' ☁️'); if (v.name === d.stimmeName) o.selected = true; sel.append(o); });
+      stimmenListe.forEach((v) => { const o = el('option'); o.value = v.name; o.textContent = v.name + (v.lokal ? '' : ' (online)'); if (v.name === d.stimmeName) o.selected = true; sel.append(o); });
       sel.addEventListener('change', () => { d.stimmeName = sel.value; Audio.setStimme(sel.value); Store.speichern(); Audio.sprich('Hallo, ich bin Nala. Wollen wir zusammen üben?'); });
       row.append(sel);
-      const test = el('button', 'knopf zweit klein', '▶ Stimme testen'); test.style.marginTop = '8px';
-      test.addEventListener('pointerdown', () => { Audio.sprich('Hallo, ich bin Nala. Freust du dich aufs Üben?'); });
-      row.append(test);
-      row.append(el('div', 'mini', 'Tipp: Für eine natürliche Stimme auf dem Gerät „Google Sprachausgabe" (Android) installieren bzw. am iPhone unter Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen eine „Premium/Enhanced"-Stimme laden.'));
+      row.append(knopf('Stimme testen', 'play', 'zweit klein', () => Audio.sprich('Hallo, ich bin Nala. Freust du dich auf den Zauberwald?')));
+      row.append(el('div', 'mini', 'Tipp: Für eine natürliche Stimme auf dem Gerät «Google Sprachausgabe» (Android) installieren bzw. am iPhone unter Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen eine «Premium/Enhanced»-Stimme laden.'));
       set.append(row);
     }
     // PIN ändern
-    const pinRow = el('div','reihe mitte');
-    const pinInput = el('input'); pinInput.type='tel'; pinInput.maxLength=4; pinInput.placeholder='Neue PIN (4 Ziffern)';
-    pinInput.style.cssText='flex:1;min-height:52px;font-size:1.1rem;padding:8px 12px;border-radius:12px;border:2px solid var(--sand-tief);';
-    const pinBtn = el('button','knopf zweit klein','PIN setzen');
-    pinBtn.addEventListener('pointerdown', () => { if(/^\d{4}$/.test(pinInput.value)){ d.pin=pinInput.value; Store.speichern(); pinBtn.textContent='✓'; pinInput.value=''; } else pinBtn.textContent='4 Ziffern!'; });
+    const pinRow = el('div', 'reihe mitte');
+    const pinInput = el('input', 'eingabe klein'); pinInput.type = 'tel'; pinInput.maxLength = 4; pinInput.placeholder = 'Neue PIN (4 Ziffern)';
+    pinInput.setAttribute('aria-label', 'Neue PIN');
+    const pinBtn = knopf('PIN setzen', null, 'zweit klein', () => {
+      const t = pinBtn.querySelector('span');
+      if (/^\d{4}$/.test(pinInput.value)) { d.pin = pinInput.value; Store.speichern(); t.textContent = 'Gespeichert'; pinInput.value = ''; } else t.textContent = '4 Ziffern!';
+    });
     pinRow.append(pinInput, pinBtn); set.append(pinRow);
     // Alle Daten löschen (alle Profile)
-    const resetBtn = el('button','knopf zweit klein','🗑️ Alle Profile & Daten löschen');
-    resetBtn.addEventListener('pointerdown', () => {
-      if(window.confirm('Wirklich ALLE Profile und Fortschritte löschen?')){
-        Store.profile().slice().forEach(pr => Store.profilLoeschen(pr.id));
-        loginScreen();
-      }
-    });
-    set.append(resetBtn);
+    set.append(knopf('Alle Profile & Daten löschen', null, 'zweit klein', () => dialog('Wirklich ALLE Profile und Fortschritte löschen?', 'Alles löschen', 'Abbrechen', () => {
+      Store.profile().slice().forEach((pr) => Store.profilLoeschen(pr.id));
+      loginScreen();
+    })));
     s.append(set);
 
-    s.append(el('p','mini','Alle Daten bleiben nur auf diesem Gerät. Keine Cloud, keine Konten, keine Werbung.'));
-    app.append(s);
+    s.append(el('p', 'mini', 'Alle Daten bleiben nur auf diesem Gerät. Keine Cloud, keine Konten, keine Werbung.'));
 
-    function zeile(l, r){ const z=el('div','zeile'); z.append(el('span',null,l), el('strong',null,r)); return z; }
-    function minText(sek){ const m=Math.floor(sek/60), s2=sek%60; return m>0?`${m} Min ${s2} Sek`:`${s2} Sek`; }
-    function schalter(label, an, cb){
-      const row=el('div','reihe mitte'); row.style.justifyContent='space-between';
-      row.append(el('span',null,label));
-      const b=el('button','knopf zweit klein', an?'An ✓':'Aus');
-      b.addEventListener('pointerdown', ()=>{ an=!an; b.textContent=an?'An ✓':'Aus'; cb(an); });
+    function zeile(l, r) { const z = el('div', 'zeile'); z.append(el('span', null, l), el('strong', null, r)); return z; }
+    function minText(sek) { const m = Math.floor(sek / 60), s2 = sek % 60; return m > 0 ? `${m} Min ${s2} Sek` : `${s2} Sek`; }
+    function schalter(label, an, cb) {
+      const row = el('div', 'zeile');
+      row.append(el('span', null, label));
+      const b = el('button', 'schalter' + (an ? ' an' : ''));
+      b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', String(an)); b.setAttribute('aria-label', label);
+      b.addEventListener('click', () => { an = !an; b.classList.toggle('an', an); b.setAttribute('aria-checked', String(an)); cb(an); Audio.tipp(); });
       row.append(b); return row;
     }
   }
@@ -643,6 +628,6 @@
   // Stimmen für Sprachausgabe evtl. verzögert laden
   if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
 
-  // Beim Start: Profil wählen/erstellen (einfaches Login), sonst direkt starten
-  if (Store.aktivesProfil()) start(); else loginScreen();
+  // Start immer mit dem Titelbild (der erste Tipp schaltet auch den Ton frei)
+  titel();
 })();

@@ -1,13 +1,22 @@
 /* sw.js – Service Worker: App funktioniert offline.
    Speichert alle Dateien im Cache und liefert sie ohne Internet. */
 
-const CACHE = 'nala-waldschule-v4';
+const CACHE = 'nala-zauberwald-v5';
 const DATEIEN = [
   './',
   './index.html',
   './css/style.css',
+  './fonts/fonts.css',
+  './fonts/fredoka-500.woff2',
+  './fonts/fredoka-600.woff2',
+  './fonts/fredoka-700.woff2',
+  './fonts/nunito-500.woff2',
+  './fonts/nunito-700.woff2',
+  './fonts/nunito-800.woff2',
+  './js/art.js',
   './js/audio.js',
   './js/music.js',
+  './js/fx.js',
   './js/storage.js',
   './js/geschichten.js',
   './js/games.js',

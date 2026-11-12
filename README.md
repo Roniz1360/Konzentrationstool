@@ -1,28 +1,42 @@
-# 🐿️ Nalas Waldschule
+# 🐿️ Nalas Zauberwald
 
-Eine ruhige Konzentrations- und Übungs-App für ein Kind in der **2. Klasse (Deutschschweiz)**.
+Ein Konzentrations- und Übungsspiel für Kinder in der **2. Klasse (Deutschschweiz)**, ca. 7–8 Jahre.
 Gebaut als **PWA** (Progressive Web App = eine installierbare Webseite). Läuft offline,
 speichert alles **nur lokal** auf dem Gerät – keine Werbung, keine Konten, keine Cloud.
 
+![Vorschau](docs/zauberwald-vorschau.png)
+
 ## Was die App macht
 
-Eine tägliche Übung = **3–4 kurze Minispiele** (ca. 10–15 Minuten). Sie mischt
-Konzentrations-Training mit **echtem Schulstoff** (Rechnen bis 100, Lesen).
-Nala das Eichhörnchen begleitet das Kind; am Ende gibt es **ein** Abzeichen fürs Album.
+Das Kind wandert mit Nala, dem Eichhörnchen, über eine **Weltkarte** durch den Zauberwald.
+Jeder Ort ist ein Minispiel. Ein **Abenteuer** = 4 Orte nacheinander (ca. 10–15 Minuten),
+gemischt aus Konzentrations-Training und **echtem Schulstoff** (Rechnen bis 100, Lesen).
+Am Ende gibt es **einen** Sticker fürs Album.
 
-### Die 7 Minispiele
+### Die 8 Orte
 
-| Spiel | Trainiert |
-|------|-----------|
-| 🍄 Pilz-Stopp | Impulskontrolle (Go/No-Go) |
-| 🔊 Echo | Merken einer Reihenfolge (Corsi) |
-| 🐻 Gleich oder anders | Arbeitsgedächtnis (1-back / 2-back) |
-| 🌀 Sortier-Wirbel | Umdenken / Regelwechsel (DCCS) |
-| 🎣 Zahlen-Fischen | **Rechnen bis 100** (Plus/Minus) |
-| 📖 Wörter-Angel | **Lesen** (Sichtwortschatz) |
-| 🔍 Finde-mich | Selektive Aufmerksamkeit |
+| Ort | Spiel | Trainiert |
+|-----|-------|-----------|
+| Pilzwiese | Pilz-Stopp | Impulskontrolle (Go/No-Go) |
+| Kristallhöhle | Kristall-Echo | Merken einer Reihenfolge (Corsi) |
+| Alter Baum | Gleich oder anders | Arbeitsgedächtnis (1-back / 2-back) |
+| Zauberbach | Sortier-Wirbel | Umdenken / Regelwechsel (DCCS) |
+| Glitzersee | Zahlen-Fischen | **Rechnen bis 100** (Plus/Minus) |
+| Lese-Lichtung | Wörter-Angel | **Lesen** (Sichtwortschatz) |
+| Blumenwiese | Finde-mich | Selektive Aufmerksamkeit |
+| Lagerfeuer | Tier-Geschichten | Zuhören und Merken |
 
 Alle Spiele haben **adaptive Schwierigkeit**: richtig → etwas schwerer, falsch → etwas leichter.
+
+### Grafik, Klang und Stimmung (Version 2.0)
+- **Alle Bilder sind im Code gezeichnet** (SVG, `js/art.js`): Figuren, Tiere, Szenen, Karte.
+  Keine Emojis, keine Bilddateien – sieht auf jedem Gerät gleich aus.
+- **Animationen**: Nala blinzelt und jubelt, Funken und Konfetti (`js/fx.js`), weiche Übergänge.
+- **Tageszeit**: Karte und Titelbild zeigen Morgen, Tag, Abend oder Nacht – passend zur Uhrzeit.
+- **Naturklänge** (`js/music.js`): Vögel, Wind, Bach, Grillen, Eule, Wassertropfen, Lagerfeuer –
+  je nach Ort. Dazu ruhige Marimba-Musik und weiche Spielklänge (`js/audio.js`).
+  Alles wird im Gerät erzeugt (keine Tondateien) und ist im Eltern-Bereich abschaltbar.
+- **Belohnung**: 1–3 Sterne pro Ort (mindestens 1 Stern gibt es immer), Lichtfunken, Stufen, Sticker.
 
 ### Gesundes Design (bewusst OHNE Suchtmechaniken)
 - Keine Streaks, kein Zeitdruck-Alarm, keine Push-Nachrichten, keine Lootboxen.
@@ -34,7 +48,7 @@ Alle Spiele haben **adaptive Schwierigkeit**: richtig → etwas schwerer, falsch
 ### Eltern-Bereich (PIN)
 Standard-PIN: **1234** (im Eltern-Bereich änderbar). Zeigt Trainingszeit, geübte
 Bereiche und Schwierigkeitsstufen – **ohne Ranking**, ohne Vergleich mit anderen Kindern.
-Dort lassen sich Spitzname, Töne, Vorlesen und PIN einstellen.
+Dort lassen sich Name, Spielklänge, Musik, Naturklänge, Vorlesen und PIN einstellen.
 
 ## Auf das Handy / Tablet bringen (ohne App-Store)
 
@@ -65,14 +79,24 @@ Reines HTML/CSS/JavaScript, keine externen Bibliotheken. Struktur:
 
 ```
 index.html            – Einstieg
-css/style.css         – Aussehen
-js/audio.js           – Vorlesen + sanfte Klänge
+css/style.css         – Aussehen und Animationen
+fonts/                – Schriften (lokal, offline)
+js/art.js             – alle Grafiken (SVG): Nala, Tiere, Dinge, Szenen, Weltkarte
+js/audio.js           – Vorlesen + Spielklänge + Mischpult
+js/music.js           – Musik und Naturstimmung
+js/fx.js              – Funken, Konfetti, Übergänge
 js/storage.js         – lokale Speicherung
-js/games.js           – die 7 Minispiele
-js/app.js             – Bildschirme + Session-Ablauf
+js/geschichten.js     – Tier-Geschichten mit Zeichnungen
+js/games.js           – die 8 Minispiele
+js/app.js             – Bildschirme + Ablauf
 manifest.webmanifest  – App-Installation
 sw.js                 – Offline-Betrieb
 icons/                – App-Symbole
+tools/sync-www.sh     – kopiert die Web-App in die Android-/iOS-Hülle
 ```
+
+Nach Änderungen an der Web-App `./tools/sync-www.sh` ausführen, damit Android und iOS
+denselben Stand haben. Die APK baut danach die GitHub-Action «Android-APK bauen».
+Die Dateien in `dist/` sind noch die alte Version 1.3.
 
 Alle Daten bleiben auf dem Gerät (`localStorage`). Datensparsam nach revDSG.

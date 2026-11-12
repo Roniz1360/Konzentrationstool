@@ -9,20 +9,21 @@ const Store = (() => {
     return {
       id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
       name: (name || 'Kind').slice(0, 20),
-      avatar: avatar || '🐿️',
+      avatar: avatar || 'nala',
       erstellt: Date.now(),
       level: {},                 // pro Spiel ein Schwierigkeitslevel
       punkte: 0,                 // gesammelte Punkte
       abzeichen: [],             // gesammelte Sticker
       sessions: [],              // Verlauf
       statsProBereich: { aufmerksamkeit: 0, gedaechtnis: 0, rechnen: 0, lesen: 0 },
+      sterne: {},                // beste Sterne (1–3) pro Spiel
     };
   }
 
   const standard = {
     version: 2,
     pin: '1234',            // Eltern-PIN
-    tonAn: true, spracheAn: true, musikAn: true,
+    tonAn: true, spracheAn: true, musikAn: true, naturAn: true,
     stimmeName: '',         // vom Elternteil gewählte Vorlese-Stimme (Name)
     aktiv: null,            // ID des aktiven Profils
     profile: [],            // Liste aller Profile
@@ -109,21 +110,32 @@ const Store = (() => {
     speichern();
   }
 
-  const STICKER = ['🌰','🍄','🌸','🦋','🌟','🐢','🍀','🐿️','🌼','🐝','🦔','🍁','🌈','🐞','🌻','🦉'];
+  // ---- Sterne pro Spiel (Lob für Dranbleiben: mindestens 1 Stern gibt es immer) ----
+  function sterneFuer(correct, total) { const q = total ? correct / total : 0; return q >= 0.85 ? 3 : q >= 0.6 ? 2 : 1; }
+  function sterneSetzen(spielId, n) {
+    const p = P(); if (!p) return n;
+    if (!p.sterne) p.sterne = {};
+    p.sterne[spielId] = Math.max(p.sterne[spielId] || 0, n); speichern(); return p.sterne[spielId];
+  }
+  function getSterne(spielId) { const p = P(); return (p && p.sterne && p.sterne[spielId]) || 0; }
+  function sterneGesamt() { const p = P(); return p && p.sterne ? Object.values(p.sterne).reduce((a, b) => a + b, 0) : 0; }
+
+  const STICKER = ['nuss','pilz','blume','schmetterling','stern','frosch','blatt','nala','sonne','biene','igel','herz','regenbogen','fuchs','mond','eule',
+                   'fisch','kristall','hase','apfel','panda','vogel','baer','katze','funke','hund','loewe','koala','tiger','maus','schloss','feuer'];
   function abzeichenGeben() {
-    const p = P(); if (!p) return '🌟';
+    const p = P(); if (!p) return 'stern';
     const s = STICKER[p.abzeichen.length % STICKER.length];
     p.abzeichen.push(s); speichern(); return s;
   }
 
   // Avatare zur Auswahl bei der Profil-Erstellung
-  const AVATARE = ['🐿️','🦊','🐻','🐼','🐰','🦔','🦉','🐸','🐱','🐶','🦁','🐨','🐯','🦄','🐢','🐝'];
+  const AVATARE = ['nala','fuchs','baer','panda','hase','igel','eule','frosch','katze','hund','loewe','koala','tiger','maus','kuh','schaf'];
 
   return {
     get, speichern, profile, aktivId, aktivesProfil: P,
     profilErstellen, profilWaehlen, profilLoeschen,
     setLevel, getLevel, startLevel, rang, schwierigkeitsBoden,
-    punkteGeben, getPunkte,
+    punkteGeben, getPunkte, sterneFuer, sterneSetzen, getSterne, sterneGesamt,
     sessionSpeichern, abzeichenGeben, STICKER, AVATARE,
   };
 })();
