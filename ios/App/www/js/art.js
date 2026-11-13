@@ -1,10 +1,11 @@
 /* art.js – Alle Grafiken des Spiels, direkt im Code gezeichnet (SVG).
+   Welt: Unterwasser – Nala taucht mit ihrem gelben U-Boot.
    Keine Emojis, keine externen Bilder: sieht auf jedem Gerät gleich aus
-   und funktioniert offline. Stil: Bilderbuch – runde Formen, warme Farben,
-   weiche Umrisslinie. */
+   und funktioniert offline. Stil: Sticker – runde Formen, kräftige Farben,
+   dunkelblaue Umrisslinie. */
 
 const Art = (() => {
-  const O = '#4a3526';                       // Umrisslinie
+  const O = '#1b2f5e';                       // Umrisslinie (Tiefsee-Blau)
   const st = (w = 3) => `stroke="${O}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
   let uid = 0;
   const svg = (inner, vb = '0 0 100 100', cls = 'art') =>
@@ -36,32 +37,37 @@ const Art = (() => {
   // NALA – das Eichhörnchen (Begleiterin)
   // ============================================================
   function nala(cls = '') {
-    const F = '#e07d3c', F2 = '#c9652a', C = '#fde9cc';
+    const F = '#f28a3c', F2 = '#d96a2a', C = '#fde9cc', A = '#19b8a6', A2 = '#0f8f86', G = '#ffd23f';
     return svg(
-      `<ellipse cx="100" cy="212" rx="56" ry="7" fill="#000" opacity=".14"/>` +
       // Schwanz
       `<g class="n-schwanz"><path d="M118 196 C172 206 204 160 192 110 C184 72 152 52 134 68 C120 80 130 100 146 98 C160 96 162 114 154 132 C146 152 132 164 118 172 Z" fill="${F2}" ${st(4)}/>` +
       `<path d="M134 186 C168 184 186 154 180 116 C176 92 160 76 148 80" fill="none" stroke="${hell(F, .25)}" stroke-width="9" stroke-linecap="round" opacity=".75"/></g>` +
-      // Körper
-      `<g class="n-koerper"><ellipse cx="78" cy="204" rx="17" ry="9" fill="${F2}" ${st(4)}/><ellipse cx="122" cy="204" rx="17" ry="9" fill="${F2}" ${st(4)}/>` +
-      `<path d="M62 150 C58 186 74 206 100 206 C126 206 142 186 138 150 C134 122 66 122 62 150Z" fill="${F}" ${st(4)}/>` +
-      `<ellipse cx="100" cy="168" rx="23" ry="30" fill="${C}"/>` +
+      // Luftflasche + Taucheranzug + Flossen
+      `<rect x="44" y="132" width="22" height="50" rx="10" fill="#c9d6e6" ${st(4)}/><rect x="49" y="124" width="12" height="10" rx="3" fill="#8fa3bd" ${st(3)}/>` +
+      `<g class="n-koerper"><path d="M52 206 Q62 188 84 200 Q92 214 70 216 Q54 216 52 206Z" fill="${G}" ${st(4)}/><path d="M148 206 Q138 188 116 200 Q108 214 130 216 Q146 216 148 206Z" fill="${G}" ${st(4)}/>` +
+      `<path d="M62 150 C58 186 74 206 100 206 C126 206 142 186 138 150 C134 122 66 122 62 150Z" fill="${A}" ${st(4)}/>` +
+      `<path d="M64 172 Q100 184 136 172 L134 184 Q100 196 66 184Z" fill="${G}"/><circle cx="100" cy="182" r="7" fill="#fff" ${st(3)}/>` +
+      `<path d="M78 138 Q100 150 122 138" fill="none" stroke="${A2}" stroke-width="4" stroke-linecap="round"/>` +
       // Arme
-      `<ellipse class="n-arm-l" cx="68" cy="156" rx="9" ry="16" transform="rotate(24 68 156)" fill="${F}" ${st(4)}/>` +
-      `<g class="n-arm-r"><ellipse cx="132" cy="156" rx="9" ry="16" transform="rotate(-24 132 156)" fill="${F}" ${st(4)}/></g></g>` +
+      `<g class="n-arm-l"><ellipse cx="68" cy="156" rx="9" ry="16" transform="rotate(24 68 156)" fill="${A}" ${st(4)}/><circle cx="62" cy="168" r="7" fill="${F}" ${st(3)}/></g>` +
+      `<g class="n-arm-r"><ellipse cx="132" cy="156" rx="9" ry="16" transform="rotate(-24 132 156)" fill="${A}" ${st(4)}/><circle cx="138" cy="168" r="7" fill="${F}" ${st(3)}/></g></g>` +
       // Kopf
       `<g class="n-kopf">` +
       `<path d="M62 54 L54 14 L88 36 Z" fill="${F}" ${st(4)}/><path d="M138 54 L146 14 L112 36 Z" fill="${F}" ${st(4)}/>` +
       `<path d="M65 44 L61 24 L78 36 Z" fill="#f7b0a0"/><path d="M135 44 L139 24 L122 36 Z" fill="#f7b0a0"/>` +
       `<ellipse cx="100" cy="84" rx="50" ry="45" fill="${F}" ${st(4)}/>` +
       `<path d="M58 96 C60 122 80 128 100 128 C120 128 140 122 142 96 C132 84 116 90 100 96 C84 90 68 84 58 96Z" fill="${C}"/>` +
-      `<g class="n-augen"><ellipse cx="80" cy="80" rx="9" ry="12" fill="#2e211a"/><circle cx="77" cy="75" r="4" fill="#fff"/><circle cx="83" cy="85" r="1.8" fill="#fff"/>` +
-      `<ellipse cx="120" cy="80" rx="9" ry="12" fill="#2e211a"/><circle cx="117" cy="75" r="4" fill="#fff"/><circle cx="123" cy="85" r="1.8" fill="#fff"/></g>` +
+      `<g class="n-augen"><ellipse cx="80" cy="80" rx="9" ry="12" fill="#1b2140"/><circle cx="77" cy="75" r="4" fill="#fff"/><circle cx="83" cy="85" r="1.8" fill="#fff"/>` +
+      `<ellipse cx="120" cy="80" rx="9" ry="12" fill="#1b2140"/><circle cx="117" cy="75" r="4" fill="#fff"/><circle cx="123" cy="85" r="1.8" fill="#fff"/></g>` +
       wange(66, 100, 8) + wange(134, 100, 8) +
       `<path d="M93 96 Q100 92 107 96 Q104 104 100 104 Q96 104 93 96Z" fill="#7a3f24"/>` +
       `<path class="n-mund" d="M88 108 Q100 120 112 108" fill="none" ${st(3.5)}/>` +
       `<rect x="95.5" y="110" width="9" height="8" rx="2" fill="#fff" ${st(2)}/>` +
-      `</g>`, '0 0 220 222', 'art nala ' + cls);
+      // Taucherhelm aus Glas
+      `<circle cx="100" cy="74" r="70" fill="#bfeeff" fill-opacity=".22" stroke="#fff" stroke-width="6"/><circle cx="100" cy="74" r="73.5" fill="none" ${st(3)}/>` +
+      `<path d="M50 44 Q62 20 88 12" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".85"/><circle cx="46" cy="58" r="4" fill="#fff" opacity=".85"/>` +
+      `<path d="M62 134 Q100 150 138 134" fill="none" stroke="${G}" stroke-width="9" stroke-linecap="round"/>` +
+      `</g>`, '0 -6 220 228', 'art nala ' + cls);
   }
 
   // ============================================================
@@ -213,6 +219,63 @@ const Art = (() => {
       glanz(38, 34, 9, 5);
   }
 
+  // Nalas gelbes U-Boot (gross, für Titel und Karte)
+  function uboot(cls = '') {
+    const id = 'ub' + (++uid), F = '#f28a3c';
+    return svg(
+      `<path d="M196 70 L228 50 L228 130 L196 110Z" fill="#ff7a66" ${st(4)}/><rect x="224" y="76" width="12" height="28" rx="6" fill="#c9d6e6" ${st(3.5)}/>` +
+      `<path d="M98 34 L98 12 L72 12" fill="none" stroke="${O}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M98 34 L98 12 L72 12" fill="none" stroke="#c9d6e6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="M68 48 Q70 26 100 26 Q130 26 132 48Z" fill="#ffb52e" ${st(4)}/>` +
+      `<path d="M10 92 Q10 44 70 44 L150 44 Q206 44 206 92 Q206 140 150 140 L70 140 Q10 140 10 92Z" fill="#ffd23f" ${st(4)}/>` +
+      `<path d="M14 106 Q70 128 202 106 Q194 140 150 140 L70 140 Q22 140 14 106Z" fill="#ffb52e"/>` +
+      `<path d="M30 70 Q44 52 76 50" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".6"/>` +
+      `<circle cx="20" cy="100" r="8" fill="#fff6a8" ${st(3)}/>` +
+      `<circle cx="80" cy="92" r="40" fill="#fff" ${st(4)}/><circle cx="80" cy="92" r="32" fill="#bfeeff" ${st(3)}/>` +
+      `<clipPath id="${id}"><circle cx="80" cy="92" r="30.5"/></clipPath><g clip-path="url(#${id})">` +
+      `<path d="M58 88 L54 64 L72 78Z" fill="${F}" ${st(3)}/><path d="M102 88 L106 64 L88 78Z" fill="${F}" ${st(3)}/><path d="M60 82 L58 70 L67 77Z" fill="#f7b0a0"/><path d="M100 82 L102 70 L93 77Z" fill="#f7b0a0"/>` +
+      `<ellipse cx="80" cy="102" rx="27" ry="24" fill="${F}" ${st(3)}/><path d="M57 108 Q60 126 80 126 Q100 126 103 108 Q92 102 80 108 Q68 102 57 108Z" fill="#fde9cc"/>` +
+      `<ellipse cx="70" cy="98" rx="4.5" ry="6" fill="#1b2140"/><circle cx="68.6" cy="95.6" r="1.9" fill="#fff"/><ellipse cx="90" cy="98" rx="4.5" ry="6" fill="#1b2140"/><circle cx="88.6" cy="95.6" r="1.9" fill="#fff"/>` +
+      wange(62, 108, 4.5) + wange(98, 108, 4.5) + `<path d="M76.5 106 Q80 104 83.5 106 Q82 110 80 110 Q78 110 76.5 106Z" fill="#7a3f24"/><path d="M74 113 Q80 119 86 113" fill="none" ${st(2.4)}/></g>` +
+      `<path d="M58 76 Q64 66 76 63" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>` +
+      `<circle cx="144" cy="88" r="15" fill="#fff" ${st(3.5)}/><circle cx="144" cy="88" r="10" fill="#bfeeff" ${st(2.5)}/><circle cx="180" cy="92" r="11" fill="#fff" ${st(3.5)}/><circle cx="180" cy="92" r="7" fill="#bfeeff" ${st(2.5)}/>` +
+      `<circle cx="120" cy="124" r="3" fill="${O}" opacity=".35"/><circle cx="160" cy="122" r="3" fill="${O}" opacity=".35"/><circle cx="46" cy="126" r="3" fill="${O}" opacity=".35"/>`,
+      '0 0 240 150', 'art uboot ' + cls);
+  }
+
+  // ---------- Meeres-Figuren mit Varianten ----------
+  function muschel(f = '#ff8fb8') {
+    return `<path d="M10 58 Q8 16 50 12 Q92 16 90 58 Q50 42 10 58Z" fill="${f}" ${st()}/>` +
+      `<path d="M50 14 L50 46 M32 18 L38 48 M68 18 L62 48 M18 30 L27 52 M82 30 L73 52" fill="none" stroke="${dunkel(f, .18)}" stroke-width="2.6" stroke-linecap="round"/>` +
+      `<path d="M10 58 Q50 42 90 58 Q50 78 10 58Z" fill="#7a2f55" ${st()}/>` +
+      `<circle cx="50" cy="58" r="11" fill="#fff" ${st(2.5)}/><circle cx="46" cy="54" r="3.5" fill="#d8f4ff"/>` +
+      `<path d="M10 58 Q12 92 50 94 Q88 92 90 58 Q50 78 10 58Z" fill="${hell(f, .2)}" ${st()}/>` +
+      auge(41, 80, 3) + auge(59, 80, 3) + `<path d="M46 86 Q50 90 54 86" fill="none" ${st(2.2)}/>` + wange(34, 84, 3) + wange(66, 84, 3);
+  }
+  function krabbe() {
+    const R = '#f0553f';
+    return `<path d="M26 66 L8 74 M28 74 L12 88 M74 66 L92 74 M72 74 L88 88 M24 56 Q10 50 14 34 M76 56 Q90 50 86 34" fill="none" ${st(4.5)}/>` +
+      `<path d="M14 36 Q0 30 6 16 Q12 22 14 14 Q26 22 14 36Z" fill="${R}" ${st()}/><path d="M86 36 Q100 30 94 16 Q88 22 86 14 Q74 22 86 36Z" fill="${R}" ${st()}/>` +
+      `<path d="M40 44 L38 28 M60 44 L62 28" fill="none" ${st(3.5)}/><circle cx="38" cy="24" r="8" fill="#fff" ${st(2.5)}/><circle cx="62" cy="24" r="8" fill="#fff" ${st(2.5)}/>` +
+      `<circle cx="39" cy="25" r="3.4" fill="#1b2140"/><circle cx="61" cy="25" r="3.4" fill="#1b2140"/><path d="M30 15 L44 19 M70 15 L56 19" fill="none" ${st(2.6)}/>` +
+      `<ellipse cx="50" cy="62" rx="32" ry="23" fill="${R}" ${st()}/><path d="M24 70 Q50 86 76 70 Q68 84 50 85 Q32 84 24 70Z" fill="${hell(R, .35)}"/>` +
+      `<path d="M42 68 Q50 62 58 68" fill="none" ${st(2.6)}/>` + glanz(36, 48, 9, 4);
+  }
+  function qualle(f = '#b79cf5', gesicht = true) {
+    return `<path d="M26 54 Q20 68 28 78 Q32 86 26 94 M42 56 Q38 70 44 80 Q48 88 44 96 M58 56 Q62 70 56 80 Q52 88 56 96 M74 54 Q80 68 72 78 Q68 86 74 94" fill="none" stroke="${dunkel(f, .1)}" stroke-width="5" stroke-linecap="round"/>` +
+      `<path d="M12 52 Q10 8 50 8 Q90 8 88 52 Q78 60 69 52 Q60 60 50 52 Q40 60 31 52 Q22 60 12 52Z" fill="${f}" ${st()}/>` +
+      `<path d="M22 44 Q22 18 46 14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".6"/>` +
+      (gesicht ? auge(40, 36, 4) + auge(60, 36, 4) + `<path d="M45 44 Q50 48 55 44" fill="none" ${st(2.2)}/>` + wange(32, 42, 4) + wange(68, 42, 4) : '');
+  }
+  // Zierfisch für «Finde-mich»: Körperfarbe × Musterfarbe × Muster
+  function zierfisch(fl = '#ffd23f', pk = '#1b2f5e', muster = 0) {
+    const m = muster === 1 ? `<circle cx="44" cy="40" r="6" fill="${pk}"/><circle cx="58" cy="54" r="6" fill="${pk}"/><circle cx="42" cy="62" r="5" fill="${pk}"/>`
+      : muster === 2 ? `<path d="M30 58 Q48 70 68 56" fill="none" stroke="${pk}" stroke-width="8" stroke-linecap="round"/>`
+      : `<path d="M40 27 Q33 50 40 73 M57 31 Q50 50 57 69" fill="none" stroke="${pk}" stroke-width="7" stroke-linecap="round"/>`;
+    return `<path d="M70 50 L96 28 Q90 50 96 72Z" fill="${dunkel(fl, .14)}" ${st()}/><path d="M34 26 Q46 2 62 30Z" fill="${dunkel(fl, .14)}" ${st()}/><path d="M36 74 Q48 96 60 70Z" fill="${dunkel(fl, .14)}" ${st()}/>` +
+      `<path d="M8 50 Q34 14 62 28 Q78 38 78 50 Q78 62 62 72 Q34 86 8 50Z" fill="${fl}" ${st()}/>` + m +
+      `<circle cx="24" cy="46" r="6.5" fill="#fff" ${st(2)}/><circle cx="23" cy="46.5" r="3" fill="#1b2140"/><path d="M11 54 Q15 57 19 55" fill="none" ${st(2.2)}/>`;
+  }
+
   const DINGE = {
     pilz: () => pilz(),
     kaefer,
@@ -270,7 +333,34 @@ const Art = (() => {
     feuer: () => `<path d="M20 86 L80 94 M20 94 L80 86" stroke="#8a5a33" stroke-width="9" stroke-linecap="round"/><path class="a-flamme" d="M50 8 C62 30 82 40 76 64 C72 82 60 88 50 88 C40 88 28 82 24 64 C20 46 36 44 38 28 C44 34 46 22 50 8Z" fill="#ff9a2e" ${st()}/>` +
       `<path class="a-flamme" d="M50 42 C56 54 64 58 62 70 C60 80 56 84 50 84 C44 84 40 80 38 70 C36 60 46 56 50 42Z" fill="#ffe066"/>`,
     wirbel: () => `<circle cx="50" cy="50" r="42" fill="#b79cf5" ${st()}/><path d="M50 50 m0 -6 a6 6 0 1 1 -6 6 a14 14 0 1 1 14 14 a22 22 0 1 1 22 -22 a30 30 0 0 0 -30 -30" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`,
-    eichhorn: null,
+    perle: () => `<circle cx="50" cy="50" r="46" fill="#fff" opacity=".3"/><circle cx="50" cy="50" r="34" fill="#fff5fb" ${st(3.5)}/><path d="M28 60 Q50 82 74 58 Q66 80 50 82 Q34 80 28 60Z" fill="#ffc4dc"/>` + glanz(38, 36, 10, 6) + `<circle cx="62" cy="62" r="3" fill="#fff"/>`,
+    // ---------- Meerestiere ----------
+    muschel: () => muschel(),
+    krabbe,
+    qualle: () => qualle(),
+    zierfisch: () => zierfisch(),
+    oktopus: () => { const f = '#a57be8'; return [[-34, 20, -40, 44], [-20, 30, -22, 54], [-6, 34, -4, 58], [8, 34, 10, 58], [22, 30, 28, 52], [34, 20, 42, 42]].map(([a, b, c, d]) =>
+        `<path d="M${50 + a * .6} 52 Q${50 + a} ${52 + b} ${50 + c} ${42 + d}" fill="none" stroke="${O}" stroke-width="13" stroke-linecap="round"/><path d="M${50 + a * .6} 52 Q${50 + a} ${52 + b} ${50 + c} ${42 + d}" fill="none" stroke="${f}" stroke-width="7.5" stroke-linecap="round"/>`).join('') +
+      `<ellipse cx="50" cy="38" rx="30" ry="29" fill="${f}" ${st()}/>` + auge(39, 40, 5) + auge(61, 40, 5) + `<path d="M43 51 Q50 57 57 51" fill="none" ${st(2.6)}/>` + wange(30, 49, 5) + wange(70, 49, 5) + glanz(38, 20, 9, 5); },
+    schildkroete: () => `<ellipse cx="24" cy="70" rx="13" ry="8" transform="rotate(-30 24 70)" fill="#7fd38a" ${st()}/><ellipse cx="62" cy="76" rx="13" ry="8" transform="rotate(30 62 76)" fill="#7fd38a" ${st()}/>` +
+      `<ellipse cx="22" cy="40" rx="13" ry="8" transform="rotate(30 22 40)" fill="#7fd38a" ${st()}/><path d="M8 58 L2 62 L10 64Z" fill="#7fd38a" ${st(2.5)}/>` +
+      `<circle cx="82" cy="46" r="14" fill="#9be3a0" ${st()}/><ellipse cx="44" cy="56" rx="34" ry="27" fill="#3fae6a" ${st()}/>` +
+      `<path d="M44 38 L58 46 L58 62 L44 72 L30 62 L30 46Z" fill="#6fd08a" ${st(2.5)}/><path d="M44 38 L44 30 M58 46 L72 40 M58 62 L70 72 M44 72 L44 82 M30 62 L18 70 M30 46 L16 40" fill="none" ${st(2.5)}/>` +
+      auge(86, 43, 3.6) + `<path d="M82 52 Q87 55 91 51" fill="none" ${st(2.2)}/>` + wange(79, 51, 3),
+    seestern: () => `<path d="${sternPfad(50, 54, 44, 22)}" fill="#ff9a4d" stroke="${O}" stroke-width="9" stroke-linejoin="round"/><path d="${sternPfad(50, 54, 44, 22)}" fill="#ff9a4d" stroke="#ff9a4d" stroke-width="3" stroke-linejoin="round"/>` +
+      auge(42, 50, 4) + auge(58, 50, 4) + `<path d="M44 60 Q50 66 56 60" fill="none" ${st(2.5)}/>` + wange(35, 58, 4) + wange(65, 58, 4) +
+      `<circle cx="50" cy="24" r="3" fill="#ffd9a8"/><circle cx="22" cy="46" r="3" fill="#ffd9a8"/><circle cx="78" cy="46" r="3" fill="#ffd9a8"/><circle cx="32" cy="80" r="3" fill="#ffd9a8"/><circle cx="68" cy="80" r="3" fill="#ffd9a8"/>`,
+    wal: () => `<path d="M24 20 Q20 8 12 10 M28 20 Q30 6 38 8" fill="none" stroke="#bfeeff" stroke-width="5" stroke-linecap="round"/>` +
+      `<path d="M6 58 Q8 30 42 30 Q72 30 82 52 L97 38 Q100 54 93 64 Q86 62 81 64 Q66 82 40 82 Q8 82 6 58Z" fill="#4f8fe8" ${st()}/>` +
+      `<path d="M8 64 Q30 74 60 70 Q52 82 38 82 Q14 82 8 64Z" fill="#d8ecff"/>` + auge(26, 54, 4.6) + `<path d="M10 64 Q20 70 30 66" fill="none" ${st(2.4)}/>` + wange(34, 62, 4) +
+      `<path d="M50 62 Q58 72 68 64" fill="#3b76cf" ${st(2.5)}/>` + glanz(44, 38, 12, 4, -8),
+    kugelfisch: () => `<path d="${sternPfad(50, 52, 44, 35, 14)}" fill="#ffd23f" ${st()}/><circle cx="50" cy="52" r="34" fill="#ffd23f"/><path d="M22 62 Q50 84 78 62 Q70 82 50 84 Q30 82 22 62Z" fill="#fff3c4"/>` +
+      `<circle cx="37" cy="44" r="8" fill="#fff" ${st(2)}/><circle cx="63" cy="44" r="8" fill="#fff" ${st(2)}/><circle cx="38" cy="45" r="3.6" fill="#1b2140"/><circle cx="62" cy="45" r="3.6" fill="#1b2140"/>` +
+      `<ellipse cx="50" cy="62" rx="6" ry="4.5" fill="#ff7a6b" ${st(2.2)}/>` + wange(28, 56, 4) + wange(72, 56, 4),
+    truhe: () => `<path d="M12 46 Q12 18 50 18 Q88 18 88 46Z" fill="#b9743a" ${st()}/><rect x="12" y="46" width="76" height="40" rx="4" fill="#a8652e" ${st()}/>` +
+      `<path d="M28 20 L28 86 M72 20 L72 86 M12 46 L88 46" fill="none" stroke="#ffd23f" stroke-width="6"/><path d="M28 20 L28 86 M72 20 L72 86" fill="none" ${st(1.5)} opacity=".4"/>` +
+      `<rect x="42" y="40" width="16" height="18" rx="4" fill="#ffd23f" ${st(2.5)}/><circle cx="50" cy="48" r="3" fill="${O}"/>` + glanz(40, 28, 8, 4),
+    uboot: () => `<g transform="translate(2 20) scale(.4)">${uboot().replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>`,
   };
 
   const hat = (name) => !!(TIERE[name] || DINGE[name] || name === 'nala');
@@ -290,13 +380,13 @@ const Art = (() => {
   const avatar = (v, cls = '') => bild(EMOJI[v] || v, cls);
 
   // ============================================================
-  // SZENEN – Hintergründe mit Stimmung
+  // SZENEN – Unterwasser-Hintergründe mit Stimmung
   // ============================================================
   const HIMMEL = {
-    morgen: ['#ffd9b0', '#ffeacb', '#cfeeff'],
-    tag:    ['#69c3ff', '#a8e0ff', '#e3f7ff'],
-    abend:  ['#5b4b9e', '#f08a6b', '#ffd18a'],
-    nacht:  ['#141a45', '#27327a', '#4b56a8'],
+    morgen: ['#ffc9a0', '#ffe6c4'],
+    tag:    ['#58b8ff', '#c9efff'],
+    abend:  ['#6a4fb0', '#ff9a7a'],
+    nacht:  ['#0e1440', '#2a3580'],
   };
   function tageszeit() {
     const h = new Date().getHours();
@@ -305,126 +395,92 @@ const Art = (() => {
   const grad = (id, farben, x2 = 0, y2 = 1) =>
     `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">` +
     farben.map((c, i) => `<stop offset="${(i / (farben.length - 1)).toFixed(2)}" stop-color="${c}"/>`).join('') + '</linearGradient>';
-  const wolke = (x, y, s, kl = '', op = 0.92) =>
-    `<g class="s-wolke ${kl}" opacity="${op}"><g transform="translate(${x} ${y}) scale(${s})"><path d="M0 30 Q-2 14 16 14 Q22 -4 42 4 Q58 -6 68 10 Q88 8 88 26 Q88 38 74 38 L12 38 Q0 38 0 30Z" fill="#fff"/></g></g>`;
-  const sterne = (n, w, h, seed = 3) => {
-    let s = '', r = seed;
-    const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < n; i++) s += `<circle class="s-stern s${i % 4}" cx="${(rnd() * w).toFixed(0)}" cy="${(rnd() * h).toFixed(0)}" r="${(0.8 + rnd() * 1.6).toFixed(1)}" fill="#fff"/>`;
+  const zufallsFolge = (seed) => { let r = seed; return () => (r = (r * 16807) % 2147483647) / 2147483647; };
+  const punkte = (n, w, y0, h, seed, farbe = '#fff', rMax = 2.4, op = 0.7) => {
+    const rnd = zufallsFolge(seed); let s = '';
+    for (let i = 0; i < n; i++) s += `<circle cx="${(rnd() * w).toFixed(0)}" cy="${(y0 + rnd() * h).toFixed(0)}" r="${(0.8 + rnd() * rMax).toFixed(1)}" fill="${farbe}" opacity="${(op * (0.4 + rnd() * 0.6)).toFixed(2)}"/>`;
     return s;
   };
-  const tanne = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-5" y="-8" width="10" height="14" fill="#6b4324"/><path d="M0 -92 L26 -52 L14 -52 L34 -22 L18 -22 L40 -4 L-40 -4 L-18 -22 L-34 -22 L-14 -52 L-26 -52Z" fill="${c}"/></g>`;
-  const laubbaum = (x, y, s, c, stamm = '#7a5232') => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-7 0 L-5 -50 L5 -50 L7 0Z" fill="${stamm}"/><circle cx="-20" cy="-62" r="24" fill="${dunkel(c, .08)}"/><circle cx="20" cy="-62" r="24" fill="${dunkel(c, .08)}"/><circle cx="0" cy="-84" r="28" fill="${c}"/><circle cx="0" cy="-58" r="22" fill="${c}"/></g>`;
-  const gras = (x, y, c) => `<path d="M${x} ${y} q-6 -16 -10 -18 q6 6 6 18 q2 -18 6 -24 q0 12 2 24 q4 -14 10 -16 q-6 8 -6 16Z" fill="${c}"/>`;
-  const blume = (x, y, c) => `<path d="M${x} ${y} l0 -12" stroke="#3f9b4f" stroke-width="2"/><circle cx="${x}" cy="${y - 14}" r="5" fill="${c}"/><circle cx="${x}" cy="${y - 14}" r="2" fill="#ffe066"/>`;
-  const gluehen = (n, w, y0, h, seed = 9) => {
-    let s = '', r = seed;
-    const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < n; i++) s += `<circle class="s-glueh g${i % 5}" cx="${(rnd() * w).toFixed(0)}" cy="${(y0 + rnd() * h).toFixed(0)}" r="3" fill="#fff59a"/>`;
-    return s;
+  // Bausteine des Meeresbodens
+  const astKoralle = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round"><path d="M0 0 L0 -44 M0 -18 Q-18 -24 -18 -46 M0 -28 Q16 -32 18 -56 M-18 -34 Q-30 -36 -30 -50 M18 -42 Q30 -44 30 -58"/></g>`;
+  const kugelKoralle = (x, y, s, c) => `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="-16" cy="-12" r="16" fill="${dunkel(c, .1)}"/><circle cx="14" cy="-14" r="18" fill="${dunkel(c, .05)}"/><circle cx="0" cy="-26" r="19" fill="${c}"/>` +
+    `<circle cx="-6" cy="-30" r="3" fill="#fff" opacity=".5"/><circle cx="8" cy="-22" r="3" fill="#fff" opacity=".5"/><circle cx="-16" cy="-14" r="2.5" fill="#fff" opacity=".5"/></g>`;
+  const tang = (x, y, h, c, neig = 1) => `<path d="M${x} ${y} Q${x - 22 * neig} ${y - h * .35} ${x + 6 * neig} ${y - h * .6} Q${x + 24 * neig} ${y - h * .85} ${x - 2 * neig} ${y - h} Q${x + 12 * neig} ${y - h * .8} ${x - 8 * neig} ${y - h * .55} Q${x - 30 * neig} ${y - h * .3} ${x + 12} ${y}Z" fill="${c}"/>`;
+  const fels = (x, y, w, h, c) => `<path d="M${x} ${y} Q${x + w * .05} ${y - h} ${x + w * .4} ${y - h * .9} Q${x + w * .8} ${y - h * 1.1} ${x + w} ${y}Z" fill="${c}"/>`;
+  const strahlen = (id, op) => `<path d="M40 0 L120 0 L260 640 L120 640Z" fill="url(#${id}l)" opacity="${op}"/><path d="M230 0 L290 0 L390 540 L300 540Z" fill="url(#${id}l)" opacity="${op * .7}"/><path d="M150 0 L176 0 L210 460 L170 460Z" fill="url(#${id}l)" opacity="${op * .5}"/>`;
+  const sandboden = (c1, c2) => `<path d="M0 690 Q80 650 170 690 Q270 730 400 670 L400 800 L0 800Z" fill="${c1}"/><path d="M0 735 Q120 705 240 742 Q330 762 400 732 L400 800 L0 800Z" fill="${c2}"/>`;
+
+  const SZENEN = {
+    // name: [Wasserfarben, Lichtstrahlen, Sand, Deko]
+    riff: () => [['#9af3ea', '#3fc8d8', '#1f8fc4'], .26, ['#f3dfa8', '#e6c784'],
+      astKoralle(34, 712, 1.2, '#ff7e9a') + kugelKoralle(84, 730, 1, '#ffa24d') + astKoralle(372, 700, 1.4, '#ff9a4d') + kugelKoralle(322, 726, 1.1, '#ff7eb6') +
+      tang(14, 720, 150, '#2fae7a') + tang(388, 716, 190, '#3fc48c', -1) + `<path d="${sternPfad(210, 760, 15, 7)}" fill="#ff8f6b"/>`],
+    tiefsee: () => [['#0a1038', '#1a1c66', '#3b2a8c'], .08, null,
+      punkte(46, 400, 40, 720, 5, '#bfe8ff', 2, .8) + fels(-30, 800, 190, 150, '#0a0d2c') + fels(250, 800, 190, 190, '#0a0d2c') +
+      astKoralle(60, 700, 1, '#7ad7ff') + astKoralle(340, 660, 1.1, '#f58fe0') + kugelKoralle(110, 724, .8, '#8f7cf0')],
+    seegras: () => [['#8fe8c8', '#2fa890', '#126a72'], .2, ['#cdd9a0', '#aebd7c'],
+      [20, 70, 120, 290, 340, 384].map((x, i) => tang(x, 730 - i % 2 * 14, 300 + (i * 67) % 220, i % 2 ? '#1f8f6a' : '#2aa67a', i % 2 ? 1 : -1)).join('') + fels(150, 760, 110, 50, '#7a8f6a')],
+    schatz: () => [['#6fd8f5', '#2a8fd0', '#1a4f9a'], .22, ['#f0d68f', '#dcb866'],
+      fels(-20, 730, 150, 120, '#3b6fa8') + fels(290, 720, 140, 150, '#33639a') +
+      `<path d="M252 690 L340 640 L352 700 L290 730Z" fill="#6b4324"/><path d="M300 664 L300 560 M300 574 L340 590 L300 606" fill="#8a5a33" stroke="#6b4324" stroke-width="6"/>` +
+      `<circle cx="70" cy="744" r="8" fill="#ffd23f"/><circle cx="92" cy="752" r="6" fill="#ffd23f"/><circle cx="180" cy="760" r="7" fill="#ffd23f"/>` + astKoralle(24, 716, 1, '#ff7e9a')],
+    wasser: () => [['#7fe3f0', '#3fb3e0', '#1c63b0', '#123f7d'], .22, ['#e8cf8f', '#d9b96e'],
+      tang(40, 724, 150, '#2fae7a') + tang(70, 734, 120, '#3fc48c', -1) + tang(350, 724, 170, '#2fae7a', -1) + tang(322, 734, 100, '#3fc48c') +
+      `<ellipse cx="200" cy="752" rx="34" ry="16" fill="#b9a27a"/><path d="${sternPfad(120, 754, 16, 7)}" fill="#ff8f6b"/>`],
+    korallen: () => [['#ffc4d0', '#d98fd8', '#6a58c0'], .2, ['#f6d9c0', '#e6b9a8'],
+      kugelKoralle(40, 730, 1.5, '#ff7e9a') + astKoralle(104, 716, 1.3, '#ffb24d') + kugelKoralle(360, 726, 1.6, '#ffa24d') + astKoralle(296, 712, 1.5, '#ff6f91') + astKoralle(200, 760, .8, '#fff')],
+    lagune: () => [['#e2fff6', '#9aeee4', '#52c4dc'], .3, ['#fff0c4', '#f1dc9c'],
+      kugelKoralle(30, 736, 1, '#ffb24d') + tang(380, 720, 130, '#4fd0a0', -1) + `<path d="${sternPfad(330, 758, 14, 6)}" fill="#ff8f6b"/>` + punkte(14, 400, 100, 500, 11, '#fff', 3, .7)],
+    grotte: () => [['#052430', '#0e4756', '#1f6c70'], .16, ['#2a5560', '#1f4450'],
+      `<path d="M0 0 L400 0 L400 90 L370 170 L338 80 L300 210 L262 90 L226 140 L190 60 L150 190 L112 80 L70 150 L40 70 L0 130Z" fill="#031820"/>` +
+      fels(-40, 800, 180, 260, '#031820') + fels(270, 800, 190, 300, '#031820') + punkte(40, 400, 120, 600, 23, '#9affe0', 2.2, .9)],
   };
 
   function szene(name) {
     const id = 'sz' + (++uid);
-    let s = '';
-    if (name === 'wiese' || name === 'blumen' || name === 'bach') {
-      const fr = name === 'blumen';
-      s = `<defs>${grad(id + 'h', fr ? ['#8fd6ff', '#d5f3ff', '#fdf6d8'] : HIMMEL.tag)}${grad(id + 'g', fr ? ['#a6e07a', '#7fcf63'] : ['#86d46a', '#4fae5b'])}</defs>` +
-        `<rect width="400" height="800" fill="url(#${id}h)"/>` +
-        `<circle cx="330" cy="90" r="46" fill="#fff3a8" opacity=".5"/><circle cx="330" cy="90" r="32" fill="#ffe066"/>` +
-        wolke(30, 70, 1, 'w1') + wolke(220, 150, .7, 'w2', .8) + wolke(-60, 210, .8, 'w3', .7) +
-        `<path d="M0 330 Q90 250 190 310 Q290 250 400 320 L400 800 L0 800Z" fill="${fr ? '#b9e89a' : '#a5dc8a'}"/>` +
-        laubbaum(40, 330, .8, '#5fbf6a') + laubbaum(350, 322, 1, '#58b765') + tanne(300, 330, .6, '#3f9b63') + tanne(96, 320, .5, '#3f9b63') +
-        `<path d="M0 380 Q120 330 240 372 Q330 340 400 368 L400 800 L0 800Z" fill="url(#${id}g)"/>`;
-      if (name === 'bach') s += `<path d="M-10 640 Q100 590 210 650 Q310 700 410 640 L410 740 Q300 790 200 740 Q100 690 -10 740Z" fill="#7fd1f5"/><path class="s-welle" d="M20 680 q20 -10 40 0 M150 690 q20 -10 40 0 M270 720 q20 -10 40 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
-      for (let i = 0; i < 12; i++) s += gras(18 + i * 34, 396 + (i * 53) % 380, '#3f9b4f');
-      const fb = ['#ff8fc0', '#ffe066', '#fff', '#b79cf5', '#ff9a6b'];
-      for (let i = 0; i < (fr ? 16 : 8); i++) s += blume(26 + (i * 97) % 360, 420 + (i * 131) % 350, fb[i % 5]);
-    } else if (name === 'wald') {
-      s = `<defs>${grad(id + 'h', ['#1f6b4f', '#3f9b63', '#8fd47a'])}${grad(id + 'l', ['#fffbd0', '#fffbd000'])}</defs>` +
-        `<rect width="400" height="800" fill="url(#${id}h)"/>` +
-        [40, 120, 210, 300, 370].map((x, i) => tanne(x, 300 + (i % 2) * 20, 1.5 + (i % 3) * .3, '#2a7d57')).join('') +
-        `<path class="s-strahl" d="M250 0 L330 0 L190 560 L70 560Z" fill="url(#${id}l)" opacity=".28"/><path class="s-strahl r2" d="M120 0 L160 0 L60 460 L0 460Z" fill="url(#${id}l)" opacity=".2"/>` +
-        `<path d="M0 420 Q100 380 200 410 Q300 380 400 420 L400 800 L0 800Z" fill="#2f8a52"/>` +
-        `<path d="M-30 800 L-10 120 Q10 60 40 120 L70 800Z" fill="#6b4324"/><path d="M330 800 L352 80 Q372 30 396 90 L430 800Z" fill="#5d3a1f"/>` +
-        `<circle cx="20" cy="110" r="70" fill="#2a7d57"/><circle cx="380" cy="70" r="80" fill="#256f4d"/>` +
-        `<path d="M0 560 Q200 510 400 560 L400 800 L0 800Z" fill="#3f9b5c"/>` +
-        [30, 110, 290, 372].map((x, i) => gras(x, 600 + i * 40, '#2a7d57')).join('') + gluehen(8, 400, 180, 420);
-    } else if (name === 'hoehle') {
-      s = `<defs>${grad(id + 'h', ['#1d1640', '#3a2b78', '#5a3f9e'])}<radialGradient id="${id}r" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#8f7cf0" stop-opacity=".55"/><stop offset="1" stop-color="#8f7cf0" stop-opacity="0"/></radialGradient></defs>` +
-        `<rect width="400" height="800" fill="url(#${id}h)"/><rect width="400" height="800" fill="url(#${id}r)"/>` +
-        `<path d="M0 0 L400 0 L400 60 L370 130 L340 50 L300 170 L262 60 L226 110 L190 40 L150 150 L112 56 L70 120 L40 50 L0 100Z" fill="#150f30"/>` +
-        `<path d="M0 800 L0 640 Q40 600 70 660 Q100 620 130 700 L130 800Z M400 800 L400 620 Q360 590 330 660 Q300 640 280 720 L280 800Z" fill="#150f30"/>` +
-        `<g opacity=".9"><path d="M22 660 L38 610 L52 662Z" fill="#7ad7ff"/><path d="M48 668 L66 630 L78 670Z" fill="#b79cf5"/><path d="M340 664 L356 606 L372 666Z" fill="#ff8fc0"/><path d="M312 676 L326 640 L340 678Z" fill="#7ad7ff"/></g>` +
-        gluehen(10, 400, 160, 560, 5);
-    } else if (name === 'wasser') {
-      s = `<defs>${grad(id + 'h', ['#7fe3f0', '#3fb3e0', '#1c63b0', '#123f7d'])}${grad(id + 'l', ['#ffffff', '#ffffff00'])}</defs>` +
-        `<rect width="400" height="800" fill="url(#${id}h)"/>` +
-        `<path class="s-strahl" d="M60 0 L130 0 L250 620 L120 620Z" fill="url(#${id}l)" opacity=".22"/><path class="s-strahl r2" d="M240 0 L290 0 L380 520 L300 520Z" fill="url(#${id}l)" opacity=".16"/>` +
-        `<path d="M0 690 Q80 650 170 690 Q270 730 400 670 L400 800 L0 800Z" fill="#e8cf8f"/><path d="M0 730 Q120 700 240 740 Q330 760 400 730 L400 800 L0 800Z" fill="#d9b96e"/>` +
-        `<g class="s-alge"><path d="M40 720 Q20 640 44 580 Q60 640 52 720Z" fill="#2fae7a"/></g><g class="s-alge a2"><path d="M70 730 Q90 660 66 610 Q54 670 60 730Z" fill="#3fc48c"/></g>` +
-        `<g class="s-alge a2"><path d="M350 720 Q372 630 346 560 Q330 640 340 720Z" fill="#2fae7a"/></g><g class="s-alge"><path d="M320 730 Q300 670 322 630 Q334 680 330 730Z" fill="#3fc48c"/></g>` +
-        `<ellipse cx="200" cy="750" rx="34" ry="16" fill="#b9a27a"/><ellipse cx="250" cy="762" rx="20" ry="10" fill="#a8916b"/><path d="${sternPfad(120, 752, 16, 7)}" fill="#ff8f6b"/>` +
-        [50, 140, 260, 340, 200, 90].map((x, i) => `<circle class="s-blase b${i % 3}" cx="${x}" cy="${760 - i * 20}" r="${4 + i % 3 * 2}" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>`).join('');
-    } else if (name === 'abend') {
-      s = `<defs>${grad(id + 'h', HIMMEL.abend)}</defs><rect width="400" height="800" fill="url(#${id}h)"/>` +
-        `<circle cx="200" cy="330" r="70" fill="#ffe9a3" opacity=".5"/><circle cx="200" cy="330" r="50" fill="#fff0b8"/>` + wolke(20, 120, .9, 'w1', .5) + wolke(250, 200, .7, 'w2', .4) +
-        `<path d="M0 350 Q100 290 200 340 Q300 290 400 345 L400 800 L0 800Z" fill="#7a5aa8"/>` +
-        tanne(50, 352, .9, '#4a3a80') + tanne(110, 346, .6, '#4a3a80') + tanne(340, 350, 1, '#4a3a80') + tanne(286, 344, .55, '#4a3a80') +
-        `<path d="M0 400 Q130 350 250 392 Q330 370 400 390 L400 800 L0 800Z" fill="#4f8a6a"/><path d="M0 520 Q200 470 400 520 L400 800 L0 800Z" fill="#3f7a5c"/>` +
-        [20, 100, 180, 260, 340].map((x, i) => gras(x + 10, 470 + (i * 67) % 300, '#2f6a4c')).join('') + gluehen(12, 400, 300, 440, 21);
-    } else {  // feuer / nacht
-      s = `<defs>${grad(id + 'h', HIMMEL.nacht)}<radialGradient id="${id}r" cx=".5" cy="1" r=".7"><stop offset="0" stop-color="#ffb24d" stop-opacity=".55"/><stop offset="1" stop-color="#ffb24d" stop-opacity="0"/></radialGradient></defs>` +
-        `<rect width="400" height="800" fill="url(#${id}h)"/>` + sterne(40, 400, 330) +
-        `<circle cx="320" cy="100" r="34" fill="#fff6c9"/><circle cx="308" cy="92" r="30" fill="#141a45" opacity=".0"/>` +
-        `<path d="M0 360 Q100 300 200 350 Q300 300 400 355 L400 800 L0 800Z" fill="#1d2a5e"/>` +
-        tanne(40, 372, 1.3, '#131d47') + tanne(120, 360, .8, '#131d47') + tanne(350, 370, 1.4, '#131d47') + tanne(280, 358, .8, '#131d47') +
-        `<path d="M0 420 Q200 370 400 420 L400 800 L0 800Z" fill="#234a4a"/><rect y="300" width="400" height="500" fill="url(#${id}r)"/>` + gluehen(10, 400, 300, 380, 13);
-    }
-    return `<svg class="szene-svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${s}</svg>`;
+    const [farben, licht, sand, deko] = (SZENEN[name] || SZENEN.riff)();
+    const s = `<defs>${grad(id + 'h', farben)}${grad(id + 'l', ['#ffffff', '#ffffff00'])}</defs>` +
+      `<rect width="400" height="800" fill="url(#${id}h)"/>` + strahlen(id, licht) +
+      (sand ? sandboden(sand[0], sand[1]) : '') + deko;
+    return `<svg class="szene-svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${s}</svg>`;
   }
 
   // ============================================================
-  // WELTKARTE – der Weg durch den Zauberwald (hochformatig, scrollt)
+  // TAUCHKARTE – von der Wasseroberfläche hinab in die Tiefsee
   // ============================================================
   const KARTE_H = 1240;
   function karte(zeit, orte) {
     const id = 'k' + (++uid), H = KARTE_H;
     const nacht = zeit === 'nacht', abend = zeit === 'abend';
-    let s = `<defs>${grad(id + 'h', HIMMEL[zeit] || HIMMEL.tag)}${grad(id + 'g', ['#a5dc8a', '#7fcf63', '#4fae5b', '#3f9b63', '#2f8a6a', '#2b6a78', '#27407a'])}</defs>` +
-      `<rect width="400" height="${H}" fill="url(#${id}g)"/><rect width="400" height="250" fill="url(#${id}h)"/>`;
-    if (nacht) s += sterne(34, 400, 170) + `<circle cx="318" cy="70" r="28" fill="#fff6c9"/><circle cx="318" cy="70" r="40" fill="#fff6c9" opacity=".25"/>`;
-    else s += `<circle cx="${abend ? 200 : 318}" cy="${abend ? 150 : 70}" r="48" fill="#fff3a8" opacity=".5"/><circle cx="${abend ? 200 : 318}" cy="${abend ? 150 : 70}" r="32" fill="${abend ? '#fff0b8' : '#ffe066'}"/>` +
-      wolke(20, 40, .9, 'w1', nacht ? .3 : .9) + wolke(210, 110, .6, 'w2', .7);
-    // Hügel-Horizont
-    s += `<path d="M0 190 Q90 130 190 178 Q300 120 400 180 L400 290 L0 290Z" fill="${abend ? '#8f7ab8' : nacht ? '#2a3a7a' : '#bfe8a0'}"/>` +
-      tanne(60, 196, .5, '#3f9b63') + tanne(330, 190, .6, '#3f9b63') + laubbaum(376, 204, .5, '#58b765') +
-      `<path d="M0 230 Q110 180 220 222 Q320 190 400 216 L400 300 L0 300Z" fill="#a5dc8a"/>`;
-    // Zonen: Höhle, See, Lagerfeuer-Lichtung
-    s += `<path d="M236 470 Q250 372 318 372 Q384 372 400 450 L400 500 L236 500Z" fill="#8b8fa8"/><path d="M262 500 Q266 426 314 426 Q360 426 366 500Z" fill="#3a2b78"/>` +
-      `<path d="M300 392 l8 -18 l8 18Z M344 398 l7 -16 l7 16Z" fill="#7ad7ff"/>`;
-    s += `<ellipse cx="120" cy="800" rx="128" ry="74" fill="#3fa9dc"/><ellipse cx="120" cy="794" rx="112" ry="60" fill="#6fd0f2"/>` +
-      `<path class="s-welle" d="M50 780 q14 -8 28 0 M130 820 q14 -8 28 0 M160 770 q14 -8 28 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>`;
-    s += `<ellipse cx="270" cy="1150" rx="120" ry="52" fill="#ffb24d" opacity=".22"/>`;
-    // Weg
+    let s = `<defs>${grad(id + 'h', HIMMEL[zeit] || HIMMEL.tag)}${grad(id + 'g', ['#7fe9e6', '#3fc0dc', '#2590cc', '#1c63b0', '#1a3f8f', '#1b2a70', '#141a50'])}${grad(id + 'l', ['#ffffff', '#ffffff00'])}</defs>` +
+      `<rect width="400" height="${H}" fill="url(#${id}g)"/><rect width="400" height="232" fill="url(#${id}h)"/>`;
+    // Himmel über dem Wasser
+    if (nacht) s += punkte(26, 400, 0, 190, 3, '#fff', 1.4, 1) + `<circle cx="320" cy="76" r="26" fill="#fff6c9"/><circle cx="320" cy="76" r="38" fill="#fff6c9" opacity=".25"/>`;
+    else s += `<circle cx="${abend ? 300 : 322}" cy="${abend ? 150 : 74}" r="46" fill="#fff3a8" opacity=".5"/><circle cx="${abend ? 300 : 322}" cy="${abend ? 150 : 74}" r="31" fill="${abend ? '#ffd9a0' : '#ffe066'}"/>` +
+      `<path d="M30 70 Q28 54 46 54 Q52 36 72 44 Q88 34 98 50 Q118 48 118 66 Q118 78 104 78 L42 78 Q30 78 30 70Z" fill="#fff" opacity=".9"/>`;
+    // Kleine Insel mit Palme, dann die Wasserlinie
+    s += `<path d="M20 232 Q70 176 130 232Z" fill="#f3dfa8"/><path d="M74 204 Q70 160 82 134" fill="none" stroke="#8a5a33" stroke-width="7" stroke-linecap="round"/>` +
+      `<path d="M82 134 Q56 120 40 136 Q62 130 82 134 Q104 112 126 124 Q104 124 82 134 Q88 106 70 94 Q76 116 82 134 Q110 132 120 150 Q102 138 82 134" fill="#3fae5a"/>` +
+      `<path d="M0 232 Q25 218 50 232 T100 232 T150 232 T200 232 T250 232 T300 232 T350 232 T400 232 L400 262 L0 262Z" fill="#7fe9e6"/>` +
+      `<path d="M0 232 Q25 218 50 232 T100 232 T150 232 T200 232 T250 232 T300 232 T350 232 T400 232" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`;
+    // Licht von oben
+    s += `<path d="M60 240 L130 240 L250 900 L130 900Z" fill="url(#${id}l)" opacity=".2"/><path d="M250 240 L300 240 L390 780 L300 780Z" fill="url(#${id}l)" opacity=".14"/>`;
+    // Ferne Bewohner als Schatten
+    s += `<g opacity=".16" fill="#0b1f5a"><path d="M250 600 Q252 572 286 572 Q316 572 326 594 L341 580 Q344 596 337 606 Q324 624 284 624 Q252 624 250 600Z"/><g transform="translate(40 880) scale(.8)"><path d="M12 52 Q10 8 50 8 Q90 8 88 52Z"/><path d="M26 54 Q20 68 28 90 M50 56 L50 96 M74 54 Q80 68 72 90" stroke="#0b1f5a" stroke-width="5" fill="none"/></g></g>`;
+    // Felsen und Riffe an den Rändern, je tiefer desto dunkler
+    [[-30, 470, 110, 120], [330, 560, 110, 150], [-40, 760, 120, 170], [320, 860, 120, 160], [-30, 1010, 130, 190], [310, 1090, 130, 170]].forEach(([x, y, w, h], i) => { s += fels(x, y, w, h, mix('#2f86b8', '#10184a', y / H)); });
+    s += astKoralle(24, 470, 1, '#ff7e9a') + kugelKoralle(372, 560, 1, '#ffa24d') + tang(16, 760, 150, '#2fae7a') + tang(388, 860, 170, '#27967a', -1) + astKoralle(30, 1010, 1.1, '#b79cf5') + kugelKoralle(366, 1090, 1.1, '#7ad7ff') +
+      tang(200, 420, 90, '#3fc48c') + tang(206, 660, 70, '#2fae7a', -1);
+    // Meeresgrund mit Schatzleuchten
+    s += `<ellipse cx="270" cy="1160" rx="130" ry="56" fill="#ffd66b" opacity=".2"/><path d="M0 1200 Q100 1170 200 1198 Q300 1224 400 1190 L400 ${H} L0 ${H}Z" fill="#2a3a7a"/>` +
+      punkte(36, 400, 760, 440, 31, '#9affe0', 2.2, .8);
+    // Tauchroute als Blasenspur
     const p = orte.map((o) => [o.x, o.y]);
-    let d = `M200 262 Q${p[0][0]} 270 ${p[0][0]} ${p[0][1]}`;
+    let d = `M200 262 Q${p[0][0]} 280 ${p[0][0]} ${p[0][1]}`;
     for (let i = 1; i < p.length; i++) { const my = (p[i - 1][1] + p[i][1]) / 2; d += ` C${p[i - 1][0]} ${my} ${p[i][0]} ${my} ${p[i][0]} ${p[i][1]}`; }
-    s += `<path d="${d}" fill="none" stroke="#b98a50" stroke-width="30" stroke-linecap="round" opacity=".5"/>` +
-      `<path d="${d}" fill="none" stroke="#f3dcae" stroke-width="22" stroke-linecap="round"/>` +
-      `<path d="${d}" fill="none" stroke="#fff6dd" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 18"/>`;
-    // Deko: Bäume, Blumen, Gras, Pilze
-    const deko = [[30, 380, 'l', .9], [200, 420, 't', .7], [20, 560, 't', .9], [372, 640, 'l', .9], [200, 560, 'l', .6], [380, 780, 't', 1], [300, 760, 't', .6],
-      [20, 950, 't', 1], [380, 960, 'l', .8], [210, 900, 't', .7], [30, 1120, 't', 1.2], [120, 1180, 't', .8], [384, 1090, 't', 1.1], [200, 690, 'l', .5]];
-    deko.forEach(([x, y, typ, sc]) => { const tief = y / H; s += typ === 'l' ? laubbaum(x, y, sc, mix('#5fbf6a', '#2f7a5a', tief)) : tanne(x, y, sc, mix('#3f9b63', '#1f4f5a', tief)); });
-    const fb = ['#ff8fc0', '#ffe066', '#fff', '#b79cf5'];
-    for (let i = 0; i < 26; i++) { const x = 14 + (i * 149) % 372, y = 320 + (i * 211) % 860; s += i % 3 ? blume(x, y, fb[i % 4]) : gras(x, y, mix('#3f9b4f', '#1f5f5a', y / H)); }
-    s += `<g transform="translate(206 318) scale(.22)">${pilz()}</g><g transform="translate(36 300) scale(.2)">${pilz('#ff9a3d')}</g><g transform="translate(330 560) scale(.2)">${pilz('#b79cf5')}</g>`;
-    // Nalas Baumhaus oben
-    s += `<g transform="translate(200 250)"><path d="M-16 20 L-12 -70 L12 -70 L16 20Z" fill="#8a5a33" ${st()}/><circle cx="-42" cy="-92" r="38" fill="#4fae5b" ${st()}/><circle cx="42" cy="-92" r="38" fill="#4fae5b" ${st()}/><circle cx="0" cy="-126" r="46" fill="#5fc16a" ${st()}/>` +
-      `<circle cx="0" cy="-92" r="40" fill="#5fc16a"/><rect x="-26" y="-98" width="52" height="38" rx="4" fill="#ffe9c4" ${st()}/><path d="M-34 -96 L0 -124 L34 -96Z" fill="#e8504a" ${st()}/>` +
-      `<circle cx="0" cy="-78" r="9" fill="${nacht || abend ? '#ffe066' : '#8fd3ff'}" ${st(2.5)}/><path d="M-10 -60 L-10 18 M10 -60 L10 18 M-10 -44 L10 -44 M-10 -28 L10 -28 M-10 -12 L10 -12 M-10 4 L10 4" stroke="#6b4324" stroke-width="3"/></g>`;
-    if (nacht || abend) s += `<rect width="400" height="${H}" fill="${nacht ? '#0b1238' : '#3a1f5a'}" opacity="${nacht ? .42 : .2}"/>` + gluehen(26, 400, 260, H - 300, 31);
+    s += `<path d="${d}" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity=".14"/>` +
+      `<path d="${d}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-dasharray="1 22" opacity=".9"/>`;
+    if (nacht || abend) s += `<rect width="400" height="${H}" fill="${nacht ? '#060b30' : '#3a1f6a'}" opacity="${nacht ? .34 : .16}"/>`;
     return `<svg class="karte-svg" viewBox="0 0 400 ${H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${s}</svg>`;
   }
 
@@ -445,6 +501,6 @@ const Art = (() => {
   const icon = (name, cls = '') => svg(ICON[name] || '', '0 0 100 100', 'icon ' + cls);
   const sternSVG = (voll) => svg(`<path d="${sternPfad(50, 53, 44, 20)}" fill="${voll ? '#ffd23f' : 'rgba(255,255,255,.28)'}" stroke="${voll ? '#b9770e' : 'rgba(0,0,0,.25)'}" stroke-width="6" stroke-linejoin="round"/>` + (voll ? glanz(40, 40, 7, 4) : ''), '0 0 100 100', 'art st' + (voll ? ' voll' : ''));
 
-  return { nala, kopf, bild, avatar, roh, hat, szene, karte, KARTE_H, tageszeit, icon, sternSVG,
-    pilz, kaefer, fisch, schmetterling, kristall, stein, TIERE: Object.keys(TIERE), hell, dunkel };
+  return { nala, uboot, kopf, bild, avatar, roh, hat, szene, karte, KARTE_H, tageszeit, icon, sternSVG,
+    pilz, kaefer, fisch, schmetterling, kristall, stein, muschel, krabbe, qualle, zierfisch, TIERE: Object.keys(TIERE), hell, dunkel };
 })();

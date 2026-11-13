@@ -1,4 +1,4 @@
-/* games.js – Die 8 Minispiele im Zauberwald.
+/* games.js – Die 8 Minispiele der Tauchfahrt.
    Jedes Spiel: spielen(feld, level, fertig, hud).
    fertig({ correct, total, bereich, newLevel }) wird am Ende aufgerufen.
    hud.schritt(i, n) zeigt den Fortschritt, hud.nala('froh'|'ups') lässt Nala reagieren.
@@ -53,19 +53,19 @@ const Games = (() => {
   }
 
   // ================================================================
-  // 1) PILZ-STOPP  (Go/No-Go – Impulskontrolle)
+  // 1) PERLEN-STOPP  (Go/No-Go – Impulskontrolle)
   // ================================================================
   function pilzStopp(feld, level, fertig, hud) {
-    Audio.sprich('Tippe die Pilze an. Den Käfer lässt du in Ruhe!');
+    Audio.sprich('Tippe die Muscheln mit Perle an. Die Krabbe lässt du in Ruhe!');
     feld.innerHTML = '';
     const info = el('div', 'ansage legende');
-    info.innerHTML = `<span class="leg ja">${Art.roh(Art.pilz())}<i>antippen</i></span><span class="leg nein">${Art.roh(Art.kaefer())}<i>in Ruhe lassen</i></span>`;
+    info.innerHTML = `<span class="leg ja">${Art.roh(Art.muschel())}<i>antippen</i></span><span class="leg nein">${Art.roh(Art.krabbe())}<i>in Ruhe lassen</i></span>`;
     const buehne = el('div', 'buehne');
-    const korb = el('div', 'korb'); korb.innerHTML = Art.bild('korb') + '<b>0</b>';
+    const korb = el('div', 'korb'); korb.innerHTML = Art.bild('truhe') + '<b>0</b>';
     buehne.append(korb);
     feld.append(info, buehne);
 
-    const HUETE = ['#e8504a', '#ff9a3d', '#f0679a', '#e8504a'];
+    const HUETE = ['#ff8fb8', '#b79cf5', '#7ad7ff', '#ffb86b'];
     const runden = 12;
     const fenster = Math.max(750, 1600 - level * 130); // Reaktionszeit sinkt mit Level
     const kaeferAnteil = Math.min(0.5, 0.25 + level * 0.03);
@@ -79,11 +79,11 @@ const Games = (() => {
       getippt = false;
       const kaefer = Math.random() < kaeferAnteil;
       const item = el('button', 'ploppi ' + (kaefer ? 'ist-kaefer' : 'ist-pilz'));
-      item.innerHTML = Art.roh(kaefer ? Art.kaefer() : Art.pilz(HUETE[zufall(0, 3)]));
+      item.innerHTML = Art.roh(kaefer ? Art.krabbe() : Art.muschel(HUETE[zufall(0, 3)]));
       item.style.left = zufall(4, 68) + '%';
       item.style.top = zufall(16, 66) + '%';
       buehne.appendChild(item);
-      Audio.plopp(kaefer ? 0.7 : 1 + Math.random() * 0.3);
+      Audio.blubb();
 
       item.addEventListener('pointerdown', () => {
         if (getippt) return;
@@ -121,7 +121,7 @@ const Games = (() => {
   // 2) ECHO  (Corsi – visuell-räumliches Arbeitsgedächtnis)
   // ================================================================
   function echo(feld, level, fertig, hud) {
-    Audio.sprich('Schau gut zu, welche Kristalle leuchten. Tippe sie dann in der gleichen Reihenfolge.');
+    Audio.sprich('Schau gut zu, welche Quallen leuchten. Tippe sie dann in der gleichen Reihenfolge.');
     feld.innerHTML = '';
     const info = ansage('Merke dir die Reihenfolge');
     const punkte = el('div', 'folge-punkte'); // zeigt, wie viele Kristalle schon getippt sind
@@ -135,7 +135,7 @@ const Games = (() => {
     const zellen = [];
     for (let k = 0; k < 9; k++) {
       const z = el('button', 'kristall-zelle');
-      z.innerHTML = Art.roh(Art.kristall(FARBEN[k]));
+      z.innerHTML = Art.roh(Art.qualle(FARBEN[k]));
       z.style.setProperty('--glut', FARBEN[k]);
       zellen.push(z); raster.appendChild(z);
     }
@@ -216,10 +216,10 @@ const Games = (() => {
   // 3) GLEICH ODER ANDERS  (1-back – Arbeitsgedächtnis)
   // ================================================================
   function gleichAnders(feld, level, fertig, hud) {
-    const tiere = ['hund','katze','maus','hase','fuchs','baer','panda','frosch','loewe','eule'];
+    const tiere = ['fisch','krabbe','qualle','oktopus','schildkroete','seestern','wal','kugelfisch','muschel','zierfisch'];
     const nBack = level >= 5 ? 2 : 1;
     const frageText = nBack === 1 ? 'Gleich wie das Tier vorher?' : 'Gleich wie 2 Tiere vorher?';
-    Audio.sprich(nBack === 1 ? 'Wer schaut aus dem Baum? Ist es das gleiche Tier wie vorher?' : 'Ist es das gleiche Tier wie zwei Tiere vorher?');
+    Audio.sprich(nBack === 1 ? 'Wer schwimmt am Bullauge vorbei? Ist es das gleiche Tier wie vorher?' : 'Ist es das gleiche Tier wie zwei Tiere vorher?');
     feld.innerHTML = '';
     const info = ansage('Merke dir das Tier!');
     const wrap = el('div', 'buehne mitte');
@@ -261,7 +261,7 @@ const Games = (() => {
       if (i >= nBack && Math.random() < 0.4) t = verlauf[i-nBack];
       else t = tiere[zufall(0, tiere.length-1)];
       verlauf.push(t); i++;
-      tier.innerHTML = Art.kopf(t); FX.anim(tier, 'guckt', 450); Audio.plopp(1.1);
+      tier.innerHTML = Art.bild(t); FX.anim(tier, 'guckt', 450); Audio.blubb();
       busy = false;
       if (i <= nBack) spaeter(zeige, 1300); // Startbilder nur zeigen
       else { info.textContent = frageText; auswahl.classList.remove('wartet'); }
@@ -273,7 +273,7 @@ const Games = (() => {
   // 4) SORTIER-WIRBEL  (DCCS – kognitive Flexibilität)
   // ================================================================
   function sortierWirbel(feld, level, fertig, hud) {
-    Audio.sprich('Sortiere den Zauberstein. Achte auf die Regel oben, sie wechselt manchmal!');
+    Audio.sprich('Sortiere den Edelstein. Achte auf die Regel oben, sie wechselt manchmal!');
     const farben = [['Rot','#e8504a'], ['Blau','#4a8fe8']];
     const formen = [['Kreis','kreis'], ['Stern','stern']];
     feld.innerHTML = '';
@@ -412,7 +412,7 @@ const Games = (() => {
   // 6) WÖRTER-ANGEL  (Lesen – Sichtwortschatz, Schweizer «ss»)
   // ================================================================
   function woerterAngel(feld, level, fertig, hud) {
-    Audio.sprich('Lies das Wort auf dem Schild. Tippe das passende Bild.');
+    Audio.sprich('Lies das Wort. Tippe das passende Bild.');
     const paare = [
       ['Hund','hund'],['Katze','katze'],['Maus','maus'],['Fisch','fisch'],['Baum','baum'],
       ['Haus','haus'],['Ball','ball'],['Apfel','apfel'],['Blume','blume'],['Auto','auto'],
@@ -467,12 +467,12 @@ const Games = (() => {
   // 7) FINDE-MICH  (visuelles Suchen – selektive Aufmerksamkeit)
   // ================================================================
   function findeMich(feld, level, fertig, hud) {
-    Audio.sprich('Finde den Schmetterling, der genau so aussieht, und tippe ihn an.');
-    // Schmetterlinge unterscheiden sich in Flügelfarbe, Fleckenfarbe und Muster.
+    Audio.sprich('Finde den Fisch, der genau so aussieht, und tippe ihn an.');
+    // Zierfische unterscheiden sich in Körperfarbe, Musterfarbe und Muster.
     // Höheres Level = ähnlichere Ablenker.
     const FL = ['#ff7eb6', '#7ad7ff', '#ffd23f', '#8be38b', '#b79cf5', '#ff9a3d'];
-    const PK = ['#ffffff', '#5b4636', '#ff5a5a', '#3f6fd9'];
-    const zeichne = (s) => Art.roh(Art.schmetterling(FL[s[0]], PK[s[1]], s[2]));
+    const PK = ['#ffffff', '#1b2f5e', '#ff5a5a', '#3f6fd9'];
+    const zeichne = (s) => Art.roh(Art.zierfisch(FL[s[0]], PK[s[1]], s[2]));
     const gleich = (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 
     feld.innerHTML = '';
@@ -693,14 +693,14 @@ const Games = (() => {
 
   // ---------- Katalog: jedes Spiel ist ein Ort im Zauberwald ----------
   const katalog = [
-    { id:'pilz',   name:'Pilz-Stopp',         ort:'Pilzwiese',       bild:'pilz',     szene:'wiese',  natur:'wiese',  farbe:'#e8504a', bereich:'aufmerksamkeit', kurz:'Schnell tippen – aber nur die Pilze!', spielen:pilzStopp },
-    { id:'echo',   name:'Kristall-Echo',      ort:'Kristallhöhle',   bild:'kristall', szene:'hoehle', natur:'hoehle', farbe:'#7ad7ff', bereich:'gedaechtnis',    kurz:'Merke dir, welche Kristalle leuchten.', spielen:echo },
-    { id:'gleich', name:'Gleich oder anders', ort:'Alter Baum',      bild:'baer',     szene:'wald',   natur:'wald',   farbe:'#a8703f', bereich:'gedaechtnis',    kurz:'Wer schaut aus dem Baum? Gleich wie vorher?', spielen:gleichAnders },
-    { id:'sort',   name:'Sortier-Wirbel',     ort:'Zauberbach',      bild:'wirbel',   szene:'bach',   natur:'bach',   farbe:'#b79cf5', bereich:'aufmerksamkeit', kurz:'Sortiere nach Farbe oder Form – pass auf die Regel auf!', spielen:sortierWirbel },
-    { id:'zahlen', name:'Zahlen-Fischen',     ort:'Glitzersee',      bild:'fisch',    szene:'wasser', natur:'wasser', farbe:'#ff9a3d', bereich:'rechnen',        kurz:'Rechne und fange den richtigen Fisch.', spielen:zahlenFischen },
-    { id:'woerter',name:'Wörter-Angel',       ort:'Lese-Lichtung',   bild:'buch',     szene:'abend',  natur:'abend',  farbe:'#f0c14a', bereich:'lesen',          kurz:'Lies das Wort und finde das Bild.', spielen:woerterAngel },
-    { id:'finde',  name:'Finde-mich',         ort:'Blumenwiese',     bild:'schmetterling', szene:'blumen', natur:'blumen', farbe:'#ff7eb6', bereich:'aufmerksamkeit', kurz:'Finde den gleichen Schmetterling.', spielen:findeMich },
-    { id:'geschichte', name:'Tier-Geschichten', ort:'Lagerfeuer',    bild:'feuer',    szene:'feuer',  natur:'feuer',  farbe:'#ff9a2e', bereich:'gedaechtnis',    kurz:'Hör die Geschichte und merke dir die Namen.', spielen:tierGeschichten },
+    { id:'pilz',   name:'Perlen-Stopp',       ort:'Muschelriff',     bild:'muschel',  szene:'riff',     natur:'riff',    farbe:'#ff8fb8', bereich:'aufmerksamkeit', kurz:'Schnell tippen – aber nur die Muscheln!', spielen:pilzStopp },
+    { id:'echo',   name:'Quallen-Echo',       ort:'Quallengarten',   bild:'qualle',   szene:'tiefsee',  natur:'tiefsee', farbe:'#b79cf5', bereich:'gedaechtnis',    kurz:'Merke dir, welche Quallen leuchten.', spielen:echo },
+    { id:'gleich', name:'Gleich oder anders', ort:'Bullauge',        bild:'oktopus',  szene:'seegras',  natur:'seegras', farbe:'#a57be8', bereich:'gedaechtnis',    kurz:'Wer schwimmt vorbei? Gleich wie vorher?', spielen:gleichAnders },
+    { id:'sort',   name:'Sortier-Wirbel',     ort:'Schatzbucht',     bild:'truhe',    szene:'schatz',   natur:'riff',    farbe:'#ffd23f', bereich:'aufmerksamkeit', kurz:'Sortiere nach Farbe oder Form – pass auf die Regel auf!', spielen:sortierWirbel },
+    { id:'zahlen', name:'Zahlen-Fischen',     ort:'Fischschwarm',    bild:'fisch',    szene:'wasser',   natur:'wasser',  farbe:'#ff9a3d', bereich:'rechnen',        kurz:'Rechne und fange den richtigen Fisch.', spielen:zahlenFischen },
+    { id:'woerter',name:'Wörter-Angel',       ort:'Korallengarten',  bild:'buch',     szene:'korallen', natur:'riff',    farbe:'#ff7e9a', bereich:'lesen',          kurz:'Lies das Wort und finde das Bild.', spielen:woerterAngel },
+    { id:'finde',  name:'Finde-mich',         ort:'Lagune',          bild:'zierfisch',szene:'lagune',   natur:'seegras', farbe:'#19b8a6', bereich:'aufmerksamkeit', kurz:'Finde den gleichen Fisch.', spielen:findeMich },
+    { id:'geschichte', name:'Tier-Geschichten', ort:'Erzähl-Grotte', bild:'wal',      szene:'grotte',   natur:'grotte',  farbe:'#4f8fe8', bereich:'gedaechtnis',    kurz:'Hör die Geschichte und merke dir die Namen.', spielen:tierGeschichten },
   ];
 
   function byId(id) { return katalog.find(g => g.id === id); }

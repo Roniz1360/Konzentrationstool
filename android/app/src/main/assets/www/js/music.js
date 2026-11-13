@@ -1,7 +1,7 @@
 /* music.js – Hintergrundmusik und Naturstimmung, komplett im Code erzeugt.
    Musik: eigene, ruhige Stücke (Marimba, weiche Fläche, sanfter Bass) –
           keine echten Songs, keine Dateien.
-   Natur: Vogelstimmen, Wind, Bach, Grillen, Eule, Wassertropfen, Lagerfeuer –
+   Natur: Wellen, Möwen, Luftblasen, Walgesang, Delfine, Wassertropfen –
           passend zum Ort und zur Tageszeit.
    Beides leise gehalten und im Eltern-Bereich abschaltbar. */
 
@@ -109,17 +109,17 @@ const Natur = (() => {
 
   // Was an welchem Ort zu hören ist (Lautstärke bzw. Häufigkeit)
   const ORTE = {
-    morgen: { wind: 0.035, voegel: 1.6 },
-    tag:    { wind: 0.04, voegel: 1 },
-    abend:  { wind: 0.035, voegel: 0.35, grillen: 0.6 },
-    nacht:  { wind: 0.03, grillen: 1, eule: 1 },
-    wiese:  { wind: 0.035, voegel: 1.3 },
-    blumen: { wind: 0.03, voegel: 1.5 },
-    bach:   { wasser: 0.05, voegel: 0.8 },
-    wald:   { wind: 0.045, voegel: 0.8, kuckuck: 1 },
-    hoehle: { tief: 0.06, tropfen: 1 },
-    wasser: { tief: 0.1, blasen: 1 },
-    feuer:  { feuer: 0.035, grillen: 0.6, eule: 0.6 },
+    // An der Wasseroberfläche (Karte, Titel) – je nach Tageszeit
+    morgen:  { wellen: 0.05, moewen: 1.2, blasen: 0.5 },
+    tag:     { wellen: 0.05, moewen: 0.8, blasen: 0.5 },
+    abend:   { wellen: 0.05, moewen: 0.3, blasen: 0.5 },
+    nacht:   { wellen: 0.04, blasen: 0.5, wal: 0.5 },
+    // Unter Wasser
+    riff:    { tief: 0.07, blasen: 1, delfin: 0.6 },
+    seegras: { tief: 0.07, blasen: 0.8, wasser: 0.02 },
+    wasser:  { tief: 0.1, blasen: 1.2 },
+    tiefsee: { tief: 0.12, blasen: 0.4, wal: 1 },
+    grotte:  { tief: 0.08, tropfen: 1, wal: 0.4 },
   };
 
   function klang(freq, dauer, laut, opt = {}) {
@@ -158,6 +158,9 @@ const Natur = (() => {
     eule() { klang(392, 0.28, 0.022, { zu: 370, pan: 0.5 }); klang(349, 0.6, 0.026, { zu: 320, wann: 0.42, pan: 0.5 }); return zuf(11, 24); },
     tropfen() { const f = zuf(900, 1700); klang(f, 0.12, 0.03, { zu: f * 0.55, pan: zuf(-0.7, 0.7) }); return zuf(1.2, 4.5); },
     blasen() { const f = zuf(300, 600), n = Math.floor(zuf(1, 4)); for (let i = 0; i < n; i++) klang(f * (1 + i * 0.15), 0.09, 0.022, { zu: f * 2.2, wann: i * 0.1, pan: zuf(-0.6, 0.6) }); return zuf(1, 3.5); },
+    moewen() { const pan = zuf(-0.8, 0.8), n = Math.floor(zuf(2, 5)); for (let i = 0; i < n; i++) klang(zuf(1500, 1800), 0.22, 0.014, { zu: 1000, wann: i * 0.3, pan }); return zuf(6, 15); },
+    wal() { const f = zuf(150, 230), pan = zuf(-0.6, 0.6); klang(f, 1.6, 0.05, { zu: f * 1.7, pan }); klang(f * 1.7, 1.8, 0.04, { zu: f * 1.1, wann: 1.4, pan }); klang(f * 3, 1.2, 0.008, { zu: f * 4.4, wann: 0.2, pan }); return zuf(9, 20); },
+    delfin() { const pan = zuf(-0.8, 0.8), n = Math.floor(zuf(4, 9)); for (let i = 0; i < n; i++) klang(zuf(3200, 5200), 0.02, 0.012, { wann: i * 0.05, pan }); klang(2400, 0.25, 0.012, { zu: 4200, wann: n * 0.05, pan }); return zuf(7, 16); },
     knistern() { const n = Math.floor(zuf(1, 4)); for (let i = 0; i < n; i++) klang(zuf(1500, 5000), 0.012, 0.03, { typ: 'square', wann: i * zuf(0.02, 0.09) }); return zuf(0.12, 0.7); },
   };
 
@@ -185,10 +188,11 @@ const Natur = (() => {
     if (!aus) { aus = P.ctx.createGain(); aus.gain.value = 1; aus.connect(P.natur); }
     const o = ORTE[neu];
     if (o.wind) schichten.wind = schicht('lowpass', 480, 0.4, o.wind);
+    if (o.wellen) { schichten.wellen = schicht('lowpass', 700, 0.3, o.wellen); schichten.gischt = schicht('bandpass', 2600, 0.4, o.wellen * 0.3); }
     if (o.wasser) { schichten.wasser = schicht('bandpass', 1500, 0.5, o.wasser); schichten.w2 = schicht('highpass', 3200, 0.3, o.wasser * 0.25); }
     if (o.tief) schichten.tief = schicht('lowpass', 210, 0.6, o.tief);
     if (o.feuer) { schichten.feuer = schicht('lowpass', 800, 0.3, o.feuer); uhr('knistern', 1); }
-    ['voegel', 'kuckuck', 'grillen', 'eule', 'tropfen', 'blasen'].forEach((a) => { if (o[a]) uhr(a, o[a]); });
+    ['voegel', 'kuckuck', 'grillen', 'eule', 'tropfen', 'blasen', 'moewen', 'wal', 'delfin'].forEach((a) => { if (o[a]) uhr(a, o[a]); });
   }
   function setEnabled(v) { enabled = !!v; const n = name; if (!enabled) { leeren(); } else if (n) { name = null; set(n); } }
 

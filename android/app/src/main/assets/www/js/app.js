@@ -1,6 +1,6 @@
 /* app.js – Bildschirme und Ablauf.
-   Rahmen: «Nalas Zauberwald» – eine Wanderung über die Weltkarte, jedes
-   Minispiel ist ein Ort im Wald. Ruhig, klares Ende, ohne Streaks,
+   Rahmen: «Nalas Tauchfahrt» – mit dem U-Boot von der Wasseroberfläche bis
+   in die Tiefsee, jedes Minispiel ist ein Ort im Meer. Ruhig, klares Ende, ohne Streaks,
    Zeitdruck-Alarm oder Push. Alles bleibt lokal auf dem Gerät. */
 
 (() => {
@@ -44,23 +44,16 @@
     app.append(s);
     return s;
   }
-  // Lebendige Stimmung über der Szene: Glühwürmchen, Wolken, Blasen (wenige, leichte Ebenen)
+  // Lebendige Stimmung über der Szene: aufsteigende Blasen, im Dunkeln leuchtendes Plankton
   function ambiente(szene) {
     const a = el('div', 'ambiente');
     const z = (min, max) => min + Math.random() * (max - min);
     const neu = (cls, n, fn) => { for (let i = 0; i < n; i++) { const e = el('i', cls); fn(e, i); a.append(e); } };
-    const hell = szene === 'wiese' || szene === 'blumen' || szene === 'bach';
-    if (hell) {
-      neu('wo', 2, (e, i) => { e.style.top = (4 + i * 9) + '%'; e.style.setProperty('--gr', (1.3 + i * 0.6).toFixed(1)); e.style.animationDuration = (70 + i * 30) + 's'; e.style.animationDelay = (-20 - i * 45) + 's'; });
-      neu('po', 5, (e) => { e.style.left = z(5, 95) + '%'; e.style.top = z(45, 95) + '%'; e.style.animationDelay = -z(0, 9) + 's'; });
-    } else if (szene === 'wasser') {
-      neu('bl', 6, (e) => { e.style.left = z(5, 95) + '%'; e.style.animationDelay = -z(0, 9) + 's'; e.style.animationDuration = z(7, 12) + 's'; });
-    } else {
-      neu('gl', 8, (e) => { e.style.left = z(4, 96) + '%'; e.style.top = z(28, 92) + '%'; e.style.animationDelay = -z(0, 7) + 's'; e.style.animationDuration = z(5, 9) + 's'; });
-    }
+    neu('bl', 6, (e) => { const g = z(8, 22); e.style.width = e.style.height = g + 'px'; e.style.left = z(4, 94) + '%'; e.style.animationDelay = -z(0, 11) + 's'; e.style.animationDuration = z(8, 14) + 's'; });
+    if (szene === 'tiefsee' || szene === 'grotte') neu('gl', 8, (e) => { e.style.left = z(4, 96) + '%'; e.style.top = z(20, 92) + '%'; e.style.animationDelay = -z(0, 7) + 's'; e.style.animationDuration = z(5, 9) + 's'; });
     return a;
   }
-  const zeitSzene = () => ({ morgen: 'wiese', tag: 'wiese', abend: 'abend', nacht: 'feuer' })[Art.tageszeit()];
+  const zeitSzene = () => ({ morgen: 'lagune', tag: 'riff', abend: 'korallen', nacht: 'tiefsee' })[Art.tageszeit()];
 
   // Nala mit Sprechblase – freundlich, liest den Text auch vor
   function nalaSagt(text, vorlesen = true, cls = '') {
@@ -71,7 +64,7 @@
     return box;
   }
   const sterneReihe = (n, cls = '') => html('div', 'sterne ' + cls, [0, 1, 2].map((i) => Art.sternSVG(i < n)).join(''));
-  const funkenZahl = (n) => html('span', 'funken-zahl', Art.bild('funke') + `<b>${n}</b>`);
+  const funkenZahl = (n) => html('span', 'funken-zahl', Art.bild('perle') + `<b>${n}</b>`);
 
   // Ruhiger Dialog im Spiel-Stil (statt System-Fenster)
   function dialog(text, jaText, neinText, onJa) {
@@ -89,8 +82,8 @@
   function titel() {
     const s = schirm('titel-screen', zeitSzene());
     Music.play('menu'); Natur.set(Art.tageszeit());
-    s.append(html('h1', 'logo', '<span>Nalas</span><b>Zauberwald</b>'));
-    s.append(html('div', 'titel-nala winkt', Art.nala()));
+    s.append(html('h1', 'logo', '<span>Nalas</span><b>Tauchfahrt</b>'));
+    s.append(html('div', 'titel-nala', Art.uboot()));
     s.append(knopf('Spielen', 'play', 'gross sonne puls', () => FX.wechsel(() => (Store.aktivesProfil() && Store.profile().length === 1 ? start() : loginScreen()))));
     s.append(el('div', 'titel-fuss', 'Konzentration · Rechnen · Lesen'));
   }
@@ -110,7 +103,7 @@
       k.append(html('span', 'avatar', Art.avatar(p.avatar)));
       const t = el('span', 'profil-info');
       t.append(el('b', null, p.name));
-      t.append(html('span', 'mini', `Stufe ${1 + Math.floor(p.punkte / 200)} · ${p.punkte} Lichtfunken`));
+      t.append(html('span', 'mini', `Stufe ${1 + Math.floor(p.punkte / 200)} · ${p.punkte} Perlen`));
       k.append(t);
       tap(k, () => { Store.profilWaehlen(p.id); FX.wechsel(start); });
       grid.append(k);
@@ -172,12 +165,12 @@
       tap(b, fn);
       return b;
     };
-    bar.append(mk('karte', 'karte', 'Wald', () => start()), mk('album', 'album', 'Album', () => albumZeigen()), mk('eltern', 'eltern', 'Eltern', () => pinAbfrage()));
+    bar.append(mk('karte', 'karte', 'Meer', () => start()), mk('album', 'album', 'Album', () => albumZeigen()), mk('eltern', 'eltern', 'Eltern', () => pinAbfrage()));
     return bar;
   }
 
   // ============================================================
-  // WELTKARTE (Home)
+  // TAUCHKARTE (Home)
   // ============================================================
   const ORTE = { pilz: [105, 385], echo: [314, 468], gleich: [110, 590], sort: [300, 690], zahlen: [120, 800], woerter: [300, 905], finde: [110, 1010], geschichte: [270, 1130] };
   let kartePos = null;   // gemerkte Scroll-Position
@@ -195,7 +188,7 @@
     karte.innerHTML = Art.karte(zeit, orte);
     const H = Art.KARTE_H;
 
-    // Nala wartet beim nächsten Ort ohne Sterne (sonst beim Baumhaus)
+    // Nalas U-Boot wartet beim nächsten Ort ohne Sterne (sonst an der Oberfläche)
     const ziel = orte.find((o) => !Store.getSterne(o.g.id));
     orte.forEach((o, i) => {
       const n = Store.getSterne(o.g.id);
@@ -207,18 +200,18 @@
       tap(b, () => ortKarte(o.g));
       karte.append(b);
     });
-    const nx = ziel ? ziel.x + (ziel.x < 200 ? 78 : -78) : 262, ny = ziel ? ziel.y - 6 : 236;
-    const nala = html('div', 'karte-nala', Art.nala());
+    const nx = ziel ? ziel.x + (ziel.x < 200 ? 84 : -84) : 230, ny = ziel ? ziel.y - 4 : 282;
+    const nala = html('div', 'karte-nala', Art.uboot());
     nala.style.left = (nx / 400 * 100) + '%'; nala.style.top = (ny / H * 100) + '%';
-    if (ziel && ziel.x > 200) nala.classList.add('schaut-rechts');
+    if (!ziel || ziel.x < 200) nala.classList.add('schaut-links');
     karte.append(nala);
-    const amb = ambiente(zeit === 'nacht' || zeit === 'abend' ? 'wald' : 'wiese');
+    const amb = ambiente('tiefsee');
     amb.classList.add('karte-amb');
     karte.append(amb);
     scroll.append(karte);
     s.append(scroll);
 
-    // Kopf: Profil, Lichtfunken, Sterne
+    // Kopf: Profil, Perlen, Sterne
     const kopf = el('div', 'kopf-hud');
     const prof = el('button', 'kopf-profil');
     prof.append(avatarRing(p));
@@ -235,7 +228,7 @@
 
     // Fuss: Abenteuer starten + Navigation
     const fuss = el('div', 'fuss');
-    fuss.append(knopf('Abenteuer starten', 'play', 'gross sonne puls', () => FX.wechsel(sessionStarten)));
+    fuss.append(knopf('Tauchgang starten', 'play', 'gross sonne puls', () => FX.wechsel(sessionStarten)));
     fuss.append(tabbar('karte'));
     s.append(fuss);
 
@@ -292,7 +285,7 @@
     return { feld, hud, s };
   }
 
-  // Ergebnis nach einem Spiel: Sterne, Lichtfunken, Lob
+  // Ergebnis nach einem Spiel: Sterne, Perlen, Lob
   function ergebnis(g, erg, gained, pr, knopfText, weiter) {
     const n = Store.sterneFuer(erg.correct || 0, erg.total || 1);
     Store.sterneSetzen(g.id, n);
@@ -303,7 +296,7 @@
     s.append(el('h1', 'titel-zeile', 'Geschafft!'));
     const st = sterneReihe(0, 'riesig'); s.append(st);
     s.append(nalaSagt(lob, true, 'jubelt'));
-    const plus = html('div', 'plus-funken', Art.bild('funke') + `<b>+${gained}</b><span>Lichtfunken</span>`);
+    const plus = html('div', 'plus-funken', Art.bild('perle') + `<b>+${gained}</b><span>Perlen</span>`);
     s.append(plus);
     const k = knopf(knopfText, 'play', 'gross sonne', weiter);
     s.append(k, el('div', 'spacer'));
@@ -317,7 +310,7 @@
   }
 
   // ============================================================
-  // ABENTEUER: 3–4 Orte nacheinander (10–15 Min.)
+  // TAUCHGANG: 4 Orte nacheinander (10–15 Min.)
   // ============================================================
   function tagesAuswahl() {
     // Mischung: 1 Aufmerksamkeit + 1 Schulstoff + 1 Gedächtnis (+ optional)
@@ -342,7 +335,7 @@
     const s = schirm('menue-screen', zeitSzene());
     Music.play('intro'); Natur.set(Art.tageszeit());
     s.append(el('div', 'spacer'));
-    s.append(nalaSagt(`Schön, dass du da bist! Heute besuchen wir ${spiele.length} Orte im Zauberwald.`));
+    s.append(nalaSagt(`Schön, dass du da bist! Heute tauchen wir zu ${spiele.length} Orten im Meer.`));
     const weg = el('div', 'weg');
     spiele.forEach((id, i) => { const g = Games.byId(id); const o = html('div', 'weg-ort', Art.bild(g.bild)); o.style.animationDelay = (300 + i * 160) + 'ms'; weg.append(o); });
     s.append(weg);
@@ -378,15 +371,15 @@
       Music.play('finale'); Natur.set(Art.tageszeit());
       Audio.jubel(); FX.konfetti();
       e.append(el('div', 'spacer'));
-      e.append(el('h1', 'titel-zeile', 'Abenteuer geschafft!'));
+      e.append(el('h1', 'titel-zeile', 'Tauchgang geschafft!'));
       e.append(nalaSagt(pr.aufgestiegen ? `Wow, neue Stufe ${pr.rang}! Ich bin stolz auf dich!`
                                         : 'Du hast heute toll geübt. Ich bin stolz auf dich!', true, 'jubelt'));
       const card = el('div', 'tafel zentriert');
       const stEl = html('div', 'sticker-gross', Art.avatar(sticker));
       card.append(el('div', 'label', 'Dein neuer Sticker'), stEl);
-      card.append(html('div', 'plus-funken', Art.bild('funke') + `<b>+${punkteSession}</b><span>Lichtfunken</span>`));
+      card.append(html('div', 'plus-funken', Art.bild('perle') + `<b>+${punkteSession}</b><span>Perlen</span>`));
       const linie = el('div', 'fortschritt-linie'); const sp = el('span'); sp.style.width = Math.round(((pr.punkte % 200) / 200) * 100) + '%'; linie.append(sp);
-      card.append(linie, el('div', 'mini', `Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} Lichtfunken bis Stufe ${pr.rang + 1}`));
+      card.append(linie, el('div', 'mini', `Stufe ${pr.rang} · noch ${200 - (pr.punkte % 200)} Perlen bis Stufe ${pr.rang + 1}`));
       e.append(card);
       // Sticker selber ins Album kleben – er fliegt von hier an seinen Platz
       const neuIndex = (Store.aktivesProfil() || { abzeichen: [1] }).abzeichen.length - 1;
@@ -407,7 +400,7 @@
       Store.sessionSpeichern(0, [id], { [erg.bereich]: erg.correct || 0 });
       const gained = (erg.correct || 0) * 10;
       const pr = Store.punkteGeben(gained);
-      FX.wechsel(() => { ergebnis(g, erg, gained, pr, 'Zurück zum Wald', () => FX.wechsel(start)); Audio.jubel(); });
+      FX.wechsel(() => { ergebnis(g, erg, gained, pr, 'Zurück zur Karte', () => FX.wechsel(start)); Audio.jubel(); });
     }, hud);
   }
 
@@ -435,7 +428,7 @@
       grid.append(a);
     }
     buch.append(grid);
-    if (!prof.abzeichen.length) buch.append(el('p', 'mini zentriert', 'Für jedes geschaffte Abenteuer bekommst du einen Sticker.'));
+    if (!prof.abzeichen.length) buch.append(el('p', 'mini zentriert', 'Für jeden geschafften Tauchgang bekommst du einen Sticker.'));
     scroll.append(buch);
     s.append(scroll);
     const fuss = el('div', 'fuss'); fuss.append(tabbar('album')); s.append(fuss);
@@ -520,7 +513,7 @@
     tap(raus, start);
     kopf.append(raus); s.append(kopf);
 
-    s.append(el('p', 'mini', `Aktives Profil: ${p.name} · ${p.punkte} Lichtfunken · Stufe ${Store.rang()} · ${Store.sterneGesamt()} Sterne`));
+    s.append(el('p', 'mini', `Aktives Profil: ${p.name} · ${p.punkte} Perlen · Stufe ${Store.rang()} · ${Store.sterneGesamt()} Sterne`));
 
     // Trainingszeit
     const heute0 = new Date(); heute0.setHours(0, 0, 0, 0);
@@ -542,7 +535,7 @@
       fort.append(el('p', 'mini', BEREICH[b]));
       const bal = el('div', 'balken'); const sp = el('span'); sp.style.width = Math.round(((p.statsProBereich[b] || 0) / max) * 100) + '%'; bal.append(sp); fort.append(bal);
     }
-    fort.append(el('p', 'mini', 'Lichtfunken, Sterne und Stufe motivieren – bewusst ohne Vergleich mit anderen Kindern.'));
+    fort.append(el('p', 'mini', 'Perlen, Sterne und Stufe motivieren – bewusst ohne Vergleich mit anderen Kindern.'));
     s.append(fort);
 
     // Profile verwalten
@@ -579,7 +572,7 @@
     set.append(schalter('Spielklänge', d.tonAn, (v) => { d.tonAn = v; Audio.setTon(v); Store.speichern(); }));
     set.append(schalter('Vorlesen', d.spracheAn, (v) => { d.spracheAn = v; Audio.setSprache(v); Store.speichern(); }));
     set.append(schalter('Musik', d.musikAn, (v) => { d.musikAn = v; Music.setEnabled(v); Store.speichern(); }));
-    set.append(schalter('Naturklänge (Vögel, Wind, Wasser)', d.naturAn !== false, (v) => { d.naturAn = v; Natur.setEnabled(v); Store.speichern(); }));
+    set.append(schalter('Meeresklänge (Wellen, Blasen, Wale)', d.naturAn !== false, (v) => { d.naturAn = v; Natur.setEnabled(v); Store.speichern(); }));
     // Stimme fürs Vorlesen wählen (falls Gerätestimmen abrufbar sind)
     const stimmenListe = Audio.stimmen ? Audio.stimmen() : [];
     if (stimmenListe.length) {
@@ -591,7 +584,7 @@
       stimmenListe.forEach((v) => { const o = el('option'); o.value = v.name; o.textContent = v.name + (v.lokal ? '' : ' (online)'); if (v.name === d.stimmeName) o.selected = true; sel.append(o); });
       sel.addEventListener('change', () => { d.stimmeName = sel.value; Audio.setStimme(sel.value); Store.speichern(); Audio.sprich('Hallo, ich bin Nala. Wollen wir zusammen üben?'); });
       row.append(sel);
-      row.append(knopf('Stimme testen', 'play', 'zweit klein', () => Audio.sprich('Hallo, ich bin Nala. Freust du dich auf den Zauberwald?')));
+      row.append(knopf('Stimme testen', 'play', 'zweit klein', () => Audio.sprich('Hallo, ich bin Nala. Freust du dich auf die Tauchfahrt?')));
       row.append(el('div', 'mini', 'Tipp: Für eine natürliche Stimme auf dem Gerät «Google Sprachausgabe» (Android) installieren bzw. am iPhone unter Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen eine «Premium/Enhanced»-Stimme laden.'));
       set.append(row);
     }

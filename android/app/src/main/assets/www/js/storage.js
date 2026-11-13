@@ -120,8 +120,8 @@ const Store = (() => {
   function getSterne(spielId) { const p = P(); return (p && p.sterne && p.sterne[spielId]) || 0; }
   function sterneGesamt() { const p = P(); return p && p.sterne ? Object.values(p.sterne).reduce((a, b) => a + b, 0) : 0; }
 
-  const STICKER = ['nuss','pilz','blume','schmetterling','stern','frosch','blatt','nala','sonne','biene','igel','herz','regenbogen','fuchs','mond','eule',
-                   'fisch','kristall','hase','apfel','panda','vogel','baer','katze','funke','hund','loewe','koala','tiger','maus','schloss','feuer'];
+  const STICKER = ['muschel','seestern','fisch','qualle','schildkroete','uboot','wal','oktopus','kugelfisch','zierfisch','truhe','krabbe','perle','nala','stern','herz',
+                   'sonne','mond','regenbogen','fuchs','panda','hase','eule','katze','hund','loewe','koala','tiger','frosch','baer','maus','igel'];
   function abzeichenGeben() {
     const p = P(); if (!p) return 'stern';
     const s = STICKER[p.abzeichen.length % STICKER.length];

@@ -1,7 +1,6 @@
-/* Lokale Schriften – im APK gebündelt, funktioniert ohne Internet. */
-@font-face { font-family:"Fredoka"; font-weight:500; font-display:swap; src:url("fredoka-500.woff2") format("woff2"); }
-@font-face { font-family:"Fredoka"; font-weight:600; font-display:swap; src:url("fredoka-600.woff2") format("woff2"); }
-@font-face { font-family:"Fredoka"; font-weight:700; font-display:swap; src:url("fredoka-700.woff2") format("woff2"); }
+/* Lokale Schriften – in der App gebündelt, funktioniert ohne Internet.
+   Baloo 2 und Nunito: SIL Open Font License. */
+@font-face { font-family:"Baloo 2"; font-weight:400 800; font-display:swap; src:url("baloo2.woff2") format("woff2"); }
 @font-face { font-family:"Nunito"; font-weight:500; font-display:swap; src:url("nunito-500.woff2") format("woff2"); }
 @font-face { font-family:"Nunito"; font-weight:700; font-display:swap; src:url("nunito-700.woff2") format("woff2"); }
 @font-face { font-family:"Nunito"; font-weight:800; font-display:swap; src:url("nunito-800.woff2") format("woff2"); }

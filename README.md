@@ -1,42 +1,43 @@
-# 🐿️ Nalas Zauberwald
+# 🐿️ Nalas Tauchfahrt
 
 Ein Konzentrations- und Übungsspiel für Kinder in der **2. Klasse (Deutschschweiz)**, ca. 7–8 Jahre.
 Gebaut als **PWA** (Progressive Web App = eine installierbare Webseite). Läuft offline,
 speichert alles **nur lokal** auf dem Gerät – keine Werbung, keine Konten, keine Cloud.
 
-![Vorschau](docs/zauberwald-vorschau.png)
+![Vorschau](docs/tauchfahrt-vorschau.png)
 
 ## Was die App macht
 
-Das Kind wandert mit Nala, dem Eichhörnchen, über eine **Weltkarte** durch den Zauberwald.
-Jeder Ort ist ein Minispiel. Ein **Abenteuer** = 4 Orte nacheinander (ca. 10–15 Minuten),
-gemischt aus Konzentrations-Training und **echtem Schulstoff** (Rechnen bis 100, Lesen).
-Am Ende gibt es **einen** Sticker fürs Album.
+Das Kind taucht mit Nala, dem Eichhörnchen, in einem gelben U-Boot von der Wasseroberfläche
+bis in die Tiefsee. Jeder Ort auf der **Tauchkarte** ist ein Minispiel. Ein **Tauchgang** = 4 Orte
+nacheinander (ca. 10–15 Minuten), gemischt aus Konzentrations-Training und **echtem Schulstoff**
+(Rechnen bis 100, Lesen). Am Ende gibt es **einen** Sticker fürs Album.
 
 ### Die 8 Orte
 
 | Ort | Spiel | Trainiert |
 |-----|-------|-----------|
-| Pilzwiese | Pilz-Stopp | Impulskontrolle (Go/No-Go) |
-| Kristallhöhle | Kristall-Echo | Merken einer Reihenfolge (Corsi) |
-| Alter Baum | Gleich oder anders | Arbeitsgedächtnis (1-back / 2-back) |
-| Zauberbach | Sortier-Wirbel | Umdenken / Regelwechsel (DCCS) |
-| Glitzersee | Zahlen-Fischen | **Rechnen bis 100** (Plus/Minus) |
-| Lese-Lichtung | Wörter-Angel | **Lesen** (Sichtwortschatz) |
-| Blumenwiese | Finde-mich | Selektive Aufmerksamkeit |
-| Lagerfeuer | Tier-Geschichten | Zuhören und Merken |
+| Muschelriff | Perlen-Stopp | Impulskontrolle (Go/No-Go) |
+| Quallengarten | Quallen-Echo | Merken einer Reihenfolge (Corsi) |
+| Bullauge | Gleich oder anders | Arbeitsgedächtnis (1-back / 2-back) |
+| Schatzbucht | Sortier-Wirbel | Umdenken / Regelwechsel (DCCS) |
+| Fischschwarm | Zahlen-Fischen | **Rechnen bis 100** (Plus/Minus) |
+| Korallengarten | Wörter-Angel | **Lesen** (Sichtwortschatz) |
+| Lagune | Finde-mich | Selektive Aufmerksamkeit |
+| Erzähl-Grotte | Tier-Geschichten | Zuhören und Merken |
 
 Alle Spiele haben **adaptive Schwierigkeit**: richtig → etwas schwerer, falsch → etwas leichter.
 
-### Grafik, Klang und Stimmung (Version 2.0)
-- **Alle Bilder sind im Code gezeichnet** (SVG, `js/art.js`): Figuren, Tiere, Szenen, Karte.
-  Keine Emojis, keine Bilddateien – sieht auf jedem Gerät gleich aus.
-- **Animationen**: Nala blinzelt und jubelt, Funken und Konfetti (`js/fx.js`), weiche Übergänge.
-- **Tageszeit**: Karte und Titelbild zeigen Morgen, Tag, Abend oder Nacht – passend zur Uhrzeit.
-- **Naturklänge** (`js/music.js`): Vögel, Wind, Bach, Grillen, Eule, Wassertropfen, Lagerfeuer –
+### Grafik, Klang und Stimmung (Version 2.1)
+- **Alle Bilder sind im Code gezeichnet** (SVG, `js/art.js`): Nala als Taucherin, U-Boot,
+  Meerestiere, Szenen, Karte. Keine Emojis, keine Bilddateien.
+- **Eigener Stil**: Meerblau, Koralle und Gelb, dunkelblaue Umrisslinie, Schrift «Baloo 2».
+- **Animationen**: schwebende Nala, aufsteigende Blasen, Funken und Konfetti (`js/fx.js`).
+- **Tageszeit**: Die Wasseroberfläche auf der Karte zeigt Morgen, Tag, Abend oder Nacht.
+- **Meeresklänge** (`js/music.js`): Wellen, Möwen, Luftblasen, Walgesang, Delfine, Tropfen –
   je nach Ort. Dazu ruhige Marimba-Musik und weiche Spielklänge (`js/audio.js`).
   Alles wird im Gerät erzeugt (keine Tondateien) und ist im Eltern-Bereich abschaltbar.
-- **Belohnung**: 1–3 Sterne pro Ort (mindestens 1 Stern gibt es immer), Lichtfunken, Stufen, Sticker.
+- **Belohnung**: 1–3 Sterne pro Ort (mindestens 1 Stern gibt es immer), Perlen, Stufen, Sticker.
 
 ### Gesundes Design (bewusst OHNE Suchtmechaniken)
 - Keine Streaks, kein Zeitdruck-Alarm, keine Push-Nachrichten, keine Lootboxen.
@@ -48,7 +49,7 @@ Alle Spiele haben **adaptive Schwierigkeit**: richtig → etwas schwerer, falsch
 ### Eltern-Bereich (PIN)
 Standard-PIN: **1234** (im Eltern-Bereich änderbar). Zeigt Trainingszeit, geübte
 Bereiche und Schwierigkeitsstufen – **ohne Ranking**, ohne Vergleich mit anderen Kindern.
-Dort lassen sich Name, Spielklänge, Musik, Naturklänge, Vorlesen und PIN einstellen.
+Dort lassen sich Name, Spielklänge, Musik, Meeresklänge, Vorlesen und PIN einstellen.
 
 ## Auf das Handy / Tablet bringen (ohne App-Store)
 
@@ -81,9 +82,9 @@ Reines HTML/CSS/JavaScript, keine externen Bibliotheken. Struktur:
 index.html            – Einstieg
 css/style.css         – Aussehen und Animationen
 fonts/                – Schriften (lokal, offline)
-js/art.js             – alle Grafiken (SVG): Nala, Tiere, Dinge, Szenen, Weltkarte
+js/art.js             – alle Grafiken (SVG): Nala, U-Boot, Tiere, Dinge, Szenen, Tauchkarte
 js/audio.js           – Vorlesen + Spielklänge + Mischpult
-js/music.js           – Musik und Naturstimmung
+js/music.js           – Musik und Meeresklänge
 js/fx.js              – Funken, Konfetti, Übergänge
 js/storage.js         – lokale Speicherung
 js/geschichten.js     – Tier-Geschichten mit Zeichnungen
@@ -97,6 +98,6 @@ tools/sync-www.sh     – kopiert die Web-App in die Android-/iOS-Hülle
 
 Nach Änderungen an der Web-App `./tools/sync-www.sh` ausführen, damit Android und iOS
 denselben Stand haben. Die APK baut danach die GitHub-Action «Android-APK bauen».
-In `dist/` liegt `NalasZauberwald-2.0-test.apk` (Test-Version); die übrigen Dateien dort sind noch Version 1.3.
+In `dist/` liegt `NalasTauchfahrt-2.1-test.apk` (Test-Version); die übrigen Dateien dort sind noch Version 1.3.
 
 Alle Daten bleiben auf dem Gerät (`localStorage`). Datensparsam nach revDSG.
