@@ -17,6 +17,9 @@ const Store = (() => {
       sessions: [],              // Verlauf
       statsProBereich: { aufmerksamkeit: 0, gedaechtnis: 0, rechnen: 0, lesen: 0 },
       sterne: {},                // beste Sterne (1–3) pro Spiel
+      aquarium: [],              // gekaufte Tiere und Deko
+      ausgegeben: 0,             // für das Aquarium ausgegebene Perlen
+      orteBekannt: [],           // bereits gefeierte, freigeschaltete Orte
     };
   }
 
@@ -101,6 +104,17 @@ const Store = (() => {
     return { punkte: p.punkte, rang: nachher, aufgestiegen: nachher > vorher };
   }
   function getPunkte() { const p = P(); return p ? p.punkte : 0; }
+  // Perlen zum Ausgeben (die Stufe zählt weiter alle je gesammelten Perlen)
+  function perlen() { const p = P(); return p ? Math.max(0, (p.punkte || 0) - (p.ausgegeben || 0)) : 0; }
+  function aquarium() { const p = P(); return (p && p.aquarium) || []; }
+  function kaufen(id, preis) {
+    const p = P(); if (!p || perlen() < preis) return false;
+    if (!p.aquarium) p.aquarium = [];
+    if (p.aquarium.includes(id)) return false;
+    p.aquarium.push(id); p.ausgegeben = (p.ausgegeben || 0) + preis; speichern(); return true;
+  }
+  function orteBekannt() { const p = P(); return (p && p.orteBekannt) || []; }
+  function ortBekannt(id) { const p = P(); if (!p) return; if (!p.orteBekannt) p.orteBekannt = []; if (!p.orteBekannt.includes(id)) { p.orteBekannt.push(id); speichern(); } }
 
   function sessionSpeichern(sekunden, spiele, bereichspunkte) {
     const p = P(); if (!p) return;
@@ -135,7 +149,7 @@ const Store = (() => {
     get, speichern, profile, aktivId, aktivesProfil: P,
     profilErstellen, profilWaehlen, profilLoeschen,
     setLevel, getLevel, startLevel, rang, schwierigkeitsBoden,
-    punkteGeben, getPunkte, sterneFuer, sterneSetzen, getSterne, sterneGesamt,
+    punkteGeben, getPunkte, perlen, aquarium, kaufen, orteBekannt, ortBekannt, sterneFuer, sterneSetzen, getSterne, sterneGesamt,
     sessionSpeichern, abzeichenGeben, STICKER, AVATARE,
   };
 })();

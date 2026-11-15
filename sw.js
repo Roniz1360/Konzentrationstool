@@ -1,7 +1,7 @@
 /* sw.js – Service Worker: App funktioniert offline.
    Speichert alle Dateien im Cache und liefert sie ohne Internet. */
 
-const CACHE = 'nala-tauchfahrt-v6';
+const CACHE = 'nala-tauchfahrt-v7';
 const DATEIEN = [
   './',
   './index.html',

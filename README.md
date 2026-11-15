@@ -13,7 +13,7 @@ bis in die Tiefsee. Jeder Ort auf der **Tauchkarte** ist ein Minispiel. Ein **Ta
 nacheinander (ca. 10–15 Minuten), gemischt aus Konzentrations-Training und **echtem Schulstoff**
 (Rechnen bis 100, Lesen). Am Ende gibt es **einen** Sticker fürs Album.
 
-### Die 8 Orte
+### Die 12 Orte
 
 | Ort | Spiel | Trainiert |
 |-----|-------|-----------|
@@ -26,9 +26,24 @@ nacheinander (ca. 10–15 Minuten), gemischt aus Konzentrations-Training und **e
 | Lagune | Finde-mich | Selektive Aufmerksamkeit |
 | Erzähl-Grotte | Tier-Geschichten | Zuhören und Merken |
 
+**Tiefsee-Graben** – diese Orte öffnen sich nach und nach mit gesammelten Sternen:
+
+| Ort | Spiel | Trainiert | Öffnet bei |
+|-----|-------|-----------|-----------|
+| Blasenvulkan | Blasen-Reihe | **Zahlen ordnen** (bis 100, auf- und abwärts) | 6 Sternen |
+| Schattenriff | Schatten-Raten | Genaues Hinschauen (Formen erkennen) | 10 Sternen |
+| Schiffswrack | Silben-Schatz | **Lesen**: Wörter aus Silben bauen | 14 Sternen |
+| Perlengrund | Muster-Kette | Logik: Muster erkennen und fortsetzen | 18 Sternen |
+
+### Mein Aquarium
+Mit den gesammelten **Perlen** holt sich das Kind Meeresbewohner (Fisch bis Wal) und Deko
+(Koralle, Anker, Schatztruhe) ins eigene Aquarium. Die Tiere schwimmen dort herum und reagieren
+beim Antippen. 19 Dinge zum Sammeln – ein Ziel für viele Tage, ohne Zufall und ohne Zeitdruck.
+Die Stufe zählt weiter alle je gesammelten Perlen, Ausgeben macht die Stufe nicht kleiner.
+
 Alle Spiele haben **adaptive Schwierigkeit**: richtig → etwas schwerer, falsch → etwas leichter.
 
-### Grafik, Klang und Stimmung (Version 2.1)
+### Grafik, Klang und Stimmung (Version 2.2)
 - **Alle Bilder sind im Code gezeichnet** (SVG, `js/art.js`): Nala als Taucherin, U-Boot,
   Meerestiere, Szenen, Karte. Keine Emojis, keine Bilddateien.
 - **Eigener Stil**: Meerblau, Koralle und Gelb, dunkelblaue Umrisslinie, Schrift «Baloo 2».
@@ -98,6 +113,6 @@ tools/sync-www.sh     – kopiert die Web-App in die Android-/iOS-Hülle
 
 Nach Änderungen an der Web-App `./tools/sync-www.sh` ausführen, damit Android und iOS
 denselben Stand haben. Die APK baut danach die GitHub-Action «Android-APK bauen».
-In `dist/` liegt `NalasTauchfahrt-2.1-test.apk` (Test-Version); die übrigen Dateien dort sind noch Version 1.3.
+In `dist/` liegt `NalasTauchfahrt-2.2-test.apk` (Test-Version); die übrigen Dateien dort sind noch Version 1.3.
 
 Alle Daten bleiben auf dem Gerät (`localStorage`). Datensparsam nach revDSG.

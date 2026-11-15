@@ -1,4 +1,4 @@
-/* games.js – Die 8 Minispiele der Tauchfahrt.
+/* games.js – Die 12 Minispiele der Tauchfahrt.
    Jedes Spiel: spielen(feld, level, fertig, hud).
    fertig({ correct, total, bereich, newLevel }) wird am Ende aufgerufen.
    hud.schritt(i, n) zeigt den Fortschritt, hud.nala('froh'|'ups') lässt Nala reagieren.
@@ -691,7 +691,263 @@ const Games = (() => {
     hoerPhase();
   }
 
-  // ---------- Katalog: jedes Spiel ist ein Ort im Zauberwald ----------
+  // ================================================================
+  // 9) BLASEN-REIHE  (Zahlen ordnen – Zahlenraum bis 100)
+  // ================================================================
+  function blasenReihe(feld, level, fertig, hud) {
+    feld.innerHTML = '';
+    const info = ansage('');
+    const buehne = el('div', 'buehne blasen-buehne');
+    feld.append(info, buehne);
+    const runden = 6;
+    let runde = 0, correct = 0;
+
+    function zahlen() {
+      const ziehe = (n, max, min = 1) => { const s = new Set(); while (s.size < n) s.add(zufall(min, max)); return [...s]; };
+      if (level <= 1) return ziehe(4, 10);
+      if (level === 2) return ziehe(5, 20);
+      if (level === 3) return misch([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]).slice(0, 5);
+      if (level === 4) return ziehe(6, 50);
+      if (level === 5) return ziehe(6, 100);
+      const basis = zufall(2, 8) * 10;            // ähnliche Zahlen: 34, 43, 38 …
+      return ziehe(7, basis + 19, basis);
+    }
+
+    function neueRunde() {
+      hud.schritt(runde, runden);
+      if (runde >= runden) { fertig({ correct, total: runden, bereich: 'rechnen', newLevel: neuesLevel(level, correct, runden, 6) }); return; }
+      runde++;
+      const abwaerts = level >= 5 && Math.random() < 0.5;
+      const liste = zahlen();
+      const reihe = liste.slice().sort((a, b) => abwaerts ? b - a : a - b);
+      info.innerHTML = abwaerts ? 'Tippe von <b>gross</b> nach klein' : 'Tippe von <b>klein</b> nach gross';
+      Audio.sprich(abwaerts ? 'Tippe die Blasen von der grössten zur kleinsten Zahl.' : 'Tippe die Blasen von der kleinsten zur grössten Zahl.');
+      buehne.innerHTML = '';
+      // Blasen ohne Überlappung im Raster verteilen
+      const plaetze = misch([[8, 6], [40, 4], [70, 8], [20, 30], [52, 28], [80, 34], [6, 56], [36, 54], [66, 58], [24, 78], [56, 80]]);
+      let pos = 0, fehler = 0;
+      liste.forEach((z, k) => {
+        const b = el('button', 'blase');
+        b.innerHTML = `<b>${z}</b>`;
+        b.style.left = plaetze[k][0] + '%'; b.style.top = plaetze[k][1] + '%';
+        b.style.animationDelay = (-Math.random() * 3).toFixed(2) + 's, ' + (k * 60) + 'ms';
+        b.addEventListener('pointerdown', () => {
+          if (b.classList.contains('weg')) return;
+          if (z === reihe[pos]) {
+            pos++; b.classList.add('weg'); Audio.plopp(0.9 + pos * 0.12);
+            FX.funkenAn(b, { typ: 'blase', n: 8, farben: ['#fff', '#d8f6ff'], g: -200, kraft: 140 });
+            buehne.querySelectorAll('.tipp').forEach(x => x.classList.remove('tipp'));
+            if (pos === reihe.length) {
+              const gut = fehler <= 1;
+              if (gut) correct++;
+              feedback(gut || fehler < 3, info, hud);
+              spaeter(neueRunde, 900);
+            }
+          } else {
+            fehler++; feedback(false, b, hud);
+            if (fehler >= 2) buehne.querySelectorAll('.blase').forEach(x => { if (+x.textContent === reihe[pos]) x.classList.add('tipp'); });
+          }
+        });
+        buehne.append(b);
+      });
+    }
+    neueRunde();
+  }
+
+  // ================================================================
+  // 10) SCHATTEN-RATEN  (genau Hinschauen – visuelle Wahrnehmung)
+  // ================================================================
+  function schattenRaten(feld, level, fertig, hud) {
+    Audio.sprich('Welcher Schatten gehört zu diesem Tier? Tippe ihn an.');
+    const GRUPPEN = [
+      ['fisch', 'zierfisch', 'kugelfisch', 'delfin', 'hai', 'wal'],
+      ['krabbe', 'oktopus', 'qualle', 'seestern', 'seepferdchen', 'rochen'],
+      ['muschel', 'schildkroete', 'truhe', 'anker', 'uboot', 'koralle'],
+      ['apfel', 'herz', 'stern', 'sonne', 'mond', 'blatt'],
+      ['haus', 'schloss', 'auto', 'hut', 'vogel', 'biene'],
+    ];
+    feld.innerHTML = '';
+    const info = ansage('Welcher Schatten passt?');
+    const wrap = el('div', 'buehne mitte');
+    const vorlage = el('div', 'schatten-vorlage');
+    wrap.append(vorlage);
+    const auswahl = el('div', 'auswahl bilder');
+    feld.append(info, wrap, auswahl);
+    const runden = 8;
+    const anzahl = level >= 3 ? 4 : 3;
+    let i = 0, correct = 0, busy = false, letztes = null;
+
+    function next() {
+      hud.schritt(i, runden);
+      if (i >= runden) { fertig({ correct, total: runden, bereich: 'aufmerksamkeit', newLevel: neuesLevel(level, correct, runden, 6) }); return; }
+      i++; busy = false;
+      let gruppe, ziel;
+      do { gruppe = GRUPPEN[zufall(0, GRUPPEN.length - 1)]; ziel = gruppe[zufall(0, gruppe.length - 1)]; } while (ziel === letztes);
+      letztes = ziel;
+      // leicht: Ablenker aus anderen Gruppen; schwer: aus der gleichen Gruppe (ähnliche Formen)
+      const pool = level >= 4 ? gruppe : GRUPPEN.filter(g => g !== gruppe).flat();
+      const optionen = [ziel, ...misch(pool.filter(x => x !== ziel)).slice(0, anzahl - 1)];
+      vorlage.innerHTML = Art.bild(ziel); FX.anim(vorlage, 'guckt', 400);
+      auswahl.className = 'auswahl bilder ' + (anzahl === 4 ? 'vier' : 'drei');
+      auswahl.innerHTML = '';
+      const knoepfe = misch(optionen).map((o, k) => {
+        const b = el('button', 'wahl bild schatten');
+        b.innerHTML = Art.bild(o);
+        b.style.animationDelay = (k * 70) + 'ms';
+        b.dataset.o = o;
+        b.addEventListener('pointerdown', () => {
+          if (busy) return; busy = true;
+          if (o === ziel) { correct++; b.classList.add('richtig', 'aufgedeckt'); feedback(true, b, hud); }
+          else { b.classList.add('falsch'); feedback(false, b, hud); const r = knoepfe.find(x => x.dataset.o === ziel); r.classList.add('richtig', 'aufgedeckt'); }
+          spaeter(next, o === ziel ? 900 : 1500);
+        });
+        auswahl.append(b);
+        return b;
+      });
+    }
+    next();
+  }
+
+  // ================================================================
+  // 11) SILBEN-SCHATZ  (Lesen – Wörter aus Silben bauen)
+  // ================================================================
+  function silbenSchatz(feld, level, fertig, hud) {
+    Audio.sprich('Baue das Wort aus den Silben. Tippe die Silben in der richtigen Reihenfolge.');
+    const WOERTER = [
+      [['Mu', 'schel'], 'muschel'], [['Krab', 'be'], 'krabbe'], [['Qual', 'le'], 'qualle'], [['Kra', 'ke'], 'oktopus'],
+      [['See', 'stern'], 'seestern'], [['Del', 'fin'], 'delfin'], [['Ro', 'chen'], 'rochen'], [['Ha', 'se'], 'hase'],
+      [['Kat', 'ze'], 'katze'], [['Bie', 'ne'], 'biene'], [['Ap', 'fel'], 'apfel'], [['Blu', 'me'], 'blume'],
+      [['Son', 'ne'], 'sonne'], [['Ti', 'ger'], 'tiger'], [['Pan', 'da'], 'panda'], [['Lö', 'we'], 'loewe'],
+      [['Vo', 'gel'], 'vogel'], [['Au', 'to'], 'auto'], [['Tru', 'he'], 'truhe'], [['An', 'ker'], 'anker'], [['Kä', 'fer'], 'kaefer'],
+      [['Schild', 'krö', 'te'], 'schildkroete'], [['Ku', 'gel', 'fisch'], 'kugelfisch'], [['See', 'pferd', 'chen'], 'seepferdchen'],
+      [['Ko', 'a', 'la'], 'koala'], [['Schmet', 'ter', 'ling'], 'schmetterling'], [['Kris', 'tall'], 'kristall'], [['Ko', 'ral', 'le'], 'koralle'],
+      [['Re', 'gen', 'bo', 'gen'], 'regenbogen'],
+    ];
+    const erlaubt = level <= 2 ? [2] : level <= 4 ? [2, 3] : [3, 4];
+    let pool = WOERTER.filter(w => erlaubt.includes(w[0].length));
+    const ablenker = level === 2 || level >= 4;
+    feld.innerHTML = '';
+    const bild = el('div', 'silben-bild');
+    const slots = el('div', 'silben-slots');
+    const chips = el('div', 'namen-chips');
+    const hoeren = knopf('Wort hören', 'ohr', 'zweit klein');
+    feld.append(ansage('Baue das Wort!'), bild, slots, chips, hoeren);
+    const runden = 8;
+    let i = 0, correct = 0, ziel = null, gelegt = [], busy = false;
+    hoeren.addEventListener('pointerdown', () => { if (ziel) Audio.sprich(ziel[0].join('')); });
+
+    function zeichne() {
+      slots.innerHTML = '';
+      ziel[0].forEach((_, k) => {
+        const s = el('button', 'silbe-slot' + (gelegt[k] ? ' voll' : ''), gelegt[k] ? gelegt[k].t : '');
+        s.addEventListener('pointerdown', () => {          // gelegte Silbe zurücknehmen
+          if (busy || !gelegt[k]) return;
+          const g = gelegt.splice(k); g.forEach(x => x.el.classList.remove('benutzt'));
+          Audio.tipp(); zeichne();
+        });
+        slots.append(s);
+      });
+    }
+
+    function next() {
+      hud.schritt(i, runden);
+      if (i >= runden) { fertig({ correct, total: runden, bereich: 'lesen', newLevel: neuesLevel(level, correct, runden, 6) }); return; }
+      i++; busy = false; gelegt = [];
+      if (!pool.length) pool = WOERTER.filter(w => erlaubt.includes(w[0].length));
+      ziel = pool.splice(zufall(0, pool.length - 1), 1)[0];
+      bild.innerHTML = Art.bild(ziel[1]); FX.anim(bild, 'guckt', 400);
+      const teile = ziel[0].slice();
+      if (ablenker) {
+        const andere = WOERTER.flatMap(w => w[0]).filter(t => !teile.includes(t));
+        teile.push(andere[zufall(0, andere.length - 1)]);
+      }
+      chips.innerHTML = '';
+      misch(teile).forEach(t => {
+        const c = el('button', 'chip silbe', t);
+        c.addEventListener('pointerdown', () => {
+          if (busy || c.classList.contains('benutzt')) return;
+          c.classList.add('benutzt'); gelegt.push({ t, el: c }); Audio.tipp(1 + gelegt.length * 0.1);
+          zeichne();
+          if (gelegt.length === ziel[0].length) pruefe();
+        });
+        chips.append(c);
+      });
+      zeichne();
+    }
+
+    function pruefe() {
+      busy = true;
+      const gut = gelegt.every((g, k) => g.t === ziel[0][k]);
+      const wort = ziel[0].join('');
+      if (gut) { correct++; feedback(true, slots, hud); Audio.sprich(wort); }
+      else {
+        feedback(false, slots, hud);
+        spaeter(() => { gelegt = ziel[0].map(t => ({ t, el: { classList: { remove() {} } } })); zeichne(); slots.classList.add('loesung'); Audio.sprich(wort); }, 500);
+      }
+      spaeter(() => { slots.classList.remove('loesung'); next(); }, gut ? 1300 : 2300);
+    }
+    next();
+  }
+
+  // ================================================================
+  // 12) MUSTER-KETTE  (Logik – Regeln erkennen und fortsetzen)
+  // ================================================================
+  function musterKette(feld, level, fertig, hud) {
+    Audio.sprich('Schau dir die Perlenkette an. Welche Perle fehlt?');
+    const FARBEN = ['#ff7e9a', '#ffd23f', '#7ad7ff', '#8be38b', '#b79cf5', '#ff9a4d'];
+    const FORMEN = ['muschel', 'seestern', 'fisch', 'qualle', 'krabbe', 'kugelfisch'];
+    const MUSTER = [['AB'], ['AAB', 'ABB'], ['ABC'], ['AABB', 'ABCC', 'AAB'], ['ABCD', 'ABAC'], ['ABCD', 'AABC', 'ABCB']];
+    const perle = (wert) => !wert.startsWith('#')
+      ? `<span class="glied form">${Art.bild(wert)}</span>`
+      : `<span class="glied perle" style="--f:${wert}"></span>`;
+    feld.innerHTML = '';
+    const info = ansage('Welche Perle fehlt?');
+    const wrap = el('div', 'buehne mitte');
+    const kette = el('div', 'kette');
+    wrap.append(kette);
+    const auswahl = el('div', 'auswahl bilder drei');
+    feld.append(info, wrap, auswahl);
+    const runden = 8;
+    let i = 0, correct = 0, busy = false;
+
+    function next() {
+      hud.schritt(i, runden);
+      if (i >= runden) { fertig({ correct, total: runden, bereich: 'logik', newLevel: neuesLevel(level, correct, runden, 6) }); return; }
+      i++; busy = false;
+      const stufe = MUSTER[Math.min(level, MUSTER.length) - 1];
+      const muster = stufe[zufall(0, stufe.length - 1)];
+      const mitFormen = level >= 4 && Math.random() < 0.5;
+      const werte = misch(mitFormen ? FORMEN : FARBEN);
+      const zuordnung = {}; [...new Set(muster)].forEach((b, k) => { zuordnung[b] = werte[k]; });
+      const laenge = Math.max(6, muster.length * 2 + 1);
+      const folge = Array.from({ length: laenge }, (_, k) => zuordnung[muster[k % muster.length]]);
+      const luecke = level >= 5 && Math.random() < 0.5 ? zufall(2, laenge - 2) : laenge - 1;
+      const richtig = folge[luecke];
+      kette.style.setProperty('--n', laenge);
+      kette.innerHTML = folge.map((w, k) => k === luecke ? '<span class="glied luecke">?</span>' : perle(w)).join('');
+      kette.querySelectorAll('.glied').forEach((g, k) => { g.style.animationDelay = (k * 60) + 'ms'; });
+      const andere = werte.filter(w => w !== richtig);
+      const optionen = misch([richtig, ...misch(andere).slice(0, 2)]);
+      auswahl.innerHTML = '';
+      const knoepfe = optionen.map(o => {
+        const b = el('button', 'wahl bild');
+        b.innerHTML = perle(o);
+        b.addEventListener('pointerdown', () => {
+          if (busy) return; busy = true;
+          const gut = o === richtig;
+          kette.querySelector('.luecke').outerHTML = perle(richtig).replace('glied', 'glied eingesetzt');
+          if (gut) { correct++; b.classList.add('richtig'); feedback(true, kette, hud); }
+          else { b.classList.add('falsch'); knoepfe[optionen.indexOf(richtig)].classList.add('richtig'); feedback(false, b, hud); }
+          spaeter(next, gut ? 1000 : 1700);
+        });
+        auswahl.append(b);
+        return b;
+      });
+    }
+    next();
+  }
+
+  // ---------- Katalog: jedes Spiel ist ein Ort im Meer ----------
   const katalog = [
     { id:'pilz',   name:'Perlen-Stopp',       ort:'Muschelriff',     bild:'muschel',  szene:'riff',     natur:'riff',    farbe:'#ff8fb8', bereich:'aufmerksamkeit', kurz:'Schnell tippen – aber nur die Muscheln!', spielen:pilzStopp },
     { id:'echo',   name:'Quallen-Echo',       ort:'Quallengarten',   bild:'qualle',   szene:'tiefsee',  natur:'tiefsee', farbe:'#b79cf5', bereich:'gedaechtnis',    kurz:'Merke dir, welche Quallen leuchten.', spielen:echo },
@@ -701,6 +957,11 @@ const Games = (() => {
     { id:'woerter',name:'Wörter-Angel',       ort:'Korallengarten',  bild:'buch',     szene:'korallen', natur:'riff',    farbe:'#ff7e9a', bereich:'lesen',          kurz:'Lies das Wort und finde das Bild.', spielen:woerterAngel },
     { id:'finde',  name:'Finde-mich',         ort:'Lagune',          bild:'zierfisch',szene:'lagune',   natur:'seegras', farbe:'#19b8a6', bereich:'aufmerksamkeit', kurz:'Finde den gleichen Fisch.', spielen:findeMich },
     { id:'geschichte', name:'Tier-Geschichten', ort:'Erzähl-Grotte', bild:'wal',      szene:'grotte',   natur:'grotte',  farbe:'#4f8fe8', bereich:'gedaechtnis',    kurz:'Hör die Geschichte und merke dir die Namen.', spielen:tierGeschichten },
+    // Tiefsee-Graben: öffnet sich nach und nach mit gesammelten Sternen
+    { id:'blasen', name:'Blasen-Reihe',       ort:'Blasenvulkan',    bild:'kugelfisch', szene:'vulkan', natur:'tiefsee', farbe:'#ff8a3d', bereich:'rechnen',        kurz:'Tippe die Zahlen-Blasen der Reihe nach.', sterne: 6,  spielen:blasenReihe },
+    { id:'schatten', name:'Schatten-Raten',   ort:'Schattenriff',    bild:'rochen',   szene:'graben',   natur:'tiefsee', farbe:'#7f8fd8', bereich:'aufmerksamkeit', kurz:'Welcher Schatten gehört zum Bild?', sterne: 10, spielen:schattenRaten },
+    { id:'silben', name:'Silben-Schatz',      ort:'Schiffswrack',    bild:'anker',    szene:'wrack',    natur:'grotte',  farbe:'#a9b8cc', bereich:'lesen',          kurz:'Baue Wörter aus Silben.', sterne: 14, spielen:silbenSchatz },
+    { id:'muster', name:'Muster-Kette',       ort:'Perlengrund',     bild:'perle',    szene:'perlgrund', natur:'riff',   farbe:'#ffb8d8', bereich:'logik',          kurz:'Finde die fehlende Perle in der Kette.', sterne: 18, spielen:musterKette },
   ];
 
   function byId(id) { return katalog.find(g => g.id === id); }

@@ -470,3 +470,97 @@ h1, h2, h3, p { margin: 0; }
   .hud-nala { width: 76px; }
   .rund-knopf { width: 64px; height: 64px; }
 }
+
+/* ---------- Version 2.2: Tiefsee-Graben, neue Spiele, Aquarium ---------- */
+.tabbtn { flex-direction: column; gap: 1px; min-height: 52px; font-size: .82rem; line-height: 1.1; }
+.tabbtn .icon { width: 1.5em; height: 1.5em; }
+
+/* Verschlossene Orte */
+.ort.gesperrt .ort-bild { filter: grayscale(.85) brightness(.75); animation: none; }
+.ort.gesperrt .ort-name { opacity: .8; }
+.schloss-marke { position: absolute; right: -6%; bottom: -4%; display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px 2px 5px; border-radius: 99px;
+  background: var(--gelb); color: var(--tinte); border: 2.5px solid var(--tinte); font: 800 .95rem var(--font-titel); filter: none; }
+.ort-bild { position: relative; }
+.ort.gesperrt .schloss-marke { filter: grayscale(0) brightness(1.33); }
+.schloss-marke .icon { width: 1.05em; height: 1.05em; }
+.ort-gross.gesperrt > .art { filter: grayscale(.8) brightness(.8); }
+.ort-gross .schloss-marke { right: -4px; bottom: -4px; padding: 6px; }
+.ort-gross .schloss-marke .icon { width: 26px; height: 26px; }
+.stern-fortschritt { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dialog.entdeckt .ort-gross { animation: sternplopp .6s cubic-bezier(.3, 1.8, .5, 1) both; }
+
+/* Blasen-Reihe */
+.blasen-buehne { min-height: 260px; }
+.blase { position: absolute; width: clamp(64px, 19vw, 92px); aspect-ratio: 1; padding: 0; border-radius: 50%; border: 3px solid #fff;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .95) 0 12%, rgba(255, 255, 255, .25) 16%, rgba(160, 230, 255, .35) 60%, rgba(255, 255, 255, .55));
+  box-shadow: 0 0 0 2px rgba(27, 47, 94, .35), 0 8px 16px rgba(10, 30, 80, .25); animation: blasewippen 3.2s ease-in-out infinite, plopp .4s cubic-bezier(.3, 1.6, .5, 1) both; }
+.blase b { font: 800 clamp(1.5rem, 7vw, 2.1rem) var(--font-titel); color: #fff; text-shadow: 0 2px 0 var(--tinte), 2px 0 0 var(--tinte), -2px 0 0 var(--tinte), 0 -2px 0 var(--tinte); }
+.blase.weg { animation: zerplatzen .3s ease-out forwards; pointer-events: none; }
+.blase.tipp { box-shadow: 0 0 0 4px var(--gelb), 0 0 24px 8px rgba(255, 224, 102, .8); }
+@keyframes blasewippen { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes zerplatzen { to { transform: scale(1.5); opacity: 0; } }
+
+/* Schatten-Raten */
+.schatten-vorlage { width: min(44vw, 26vh, 220px); filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .3)); }
+.wahl.schatten .art { filter: brightness(0) opacity(.82); transition: filter .4s; }
+.wahl.schatten.aufgedeckt .art { filter: none; }
+
+/* Silben-Schatz */
+.silben-bild { align-self: center; width: min(36vw, 22vh, 180px); filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .3)); }
+.silben-slots { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.silbe-slot { min-width: 74px; min-height: 60px; padding: 4px 12px; border: 3px dashed rgba(255, 255, 255, .85); border-radius: 16px; background: rgba(255, 255, 255, .2);
+  font: 800 1.7rem var(--font-titel); color: var(--tinte); }
+.silbe-slot.voll { border-style: solid; border-color: var(--tinte); background: #fff; box-shadow: 0 4px 0 var(--creme-tief); }
+.silben-slots.loesung .silbe-slot { background: #c9f5c4; }
+.chip.silbe { font-size: 1.6rem; min-height: 58px; padding: 6px 22px; }
+
+/* Muster-Kette */
+.kette { position: relative; display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 3px; padding: 16px 6px; border-radius: 26px; background: rgba(255, 255, 255, .3); border: 3px solid rgba(255, 255, 255, .8); max-width: 100%; }
+.kette::before { content: ""; position: absolute; left: 18px; right: 18px; top: 50%; height: 4px; margin-top: -2px; background: rgba(255, 255, 255, .8); border-radius: 4px; }
+.glied { position: relative; flex: none; width: min(56px, calc((min(100vw, 560px) - 64px - (var(--n, 7) - 1) * 3px) / var(--n, 7))); aspect-ratio: 1; display: grid; place-items: center; animation: plopp .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+.glied.perle { border-radius: 50%; border: 3px solid var(--tinte); background: radial-gradient(circle at 34% 30%, #fff 0 14%, var(--f) 40%, color-mix(in srgb, var(--f) 70%, #000)); }
+.glied.form { padding: 0; }
+.glied.luecke { border-radius: 50%; border: 3px dashed var(--tinte); background: #fff; font: 800 1.6rem var(--font-titel); color: var(--sonne-tief); animation: puls 1.2s ease-in-out infinite; }
+.glied.eingesetzt { animation: sternplopp .5s cubic-bezier(.3, 1.8, .5, 1) both; }
+.wahl.bild .glied { width: 64%; animation: none; }
+.glied.luecke { font-size: clamp(1rem, 5vw, 1.6rem); }
+
+/* Aquarium */
+.aquarium-screen { padding-left: 0; padding-right: 0; gap: 10px; }
+.aqua-kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 16px; }
+.aqua-kopf .titel-zeile { text-align: left; font-size: clamp(1.6rem, 7vw, 2.2rem); }
+.becken { position: relative; flex: 1 1 0 !important; min-height: 180px; overflow: hidden; max-width: none !important; }
+.becken-leer { position: absolute; left: 24px; right: 24px; top: 30%; text-align: center; color: var(--tinte); font: 700 1.2rem var(--font-titel); background: rgba(255, 255, 255, .8); border-radius: 20px; padding: 12px 16px; }
+.deko { position: absolute; bottom: 0; width: clamp(80px, 24vw, 130px); filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .2)); }
+.bewohner { position: absolute; left: 0; width: clamp(70px, 21vw, 120px); padding: 0; border: 0; background: none; z-index: 5;
+  animation: hinundher var(--dauer, 18s) linear infinite; }
+.bewohner .innen { display: block; animation: bob 3s ease-in-out infinite; }
+.bewohner.schwebt { animation-name: schwebend; }
+.bewohner.schwebt .innen { animation: schwebenauf 4s ease-in-out infinite; }
+.bewohner.krabbelt { animation-name: krabbeln-quer; animation-timing-function: ease-in-out; }
+.bewohner.krabbelt .innen { animation: wackeln-klein .5s ease-in-out infinite; }
+.bewohner.neu { filter: drop-shadow(0 0 14px #fff8a8); }
+@keyframes hinundher {
+  0% { transform: translateX(-30%) scaleX(-1); } 48% { transform: translateX(calc(100vw - 70%)) scaleX(-1); }
+  50% { transform: translateX(calc(100vw - 70%)) scaleX(1); } 98% { transform: translateX(-30%) scaleX(1); } 100% { transform: translateX(-30%) scaleX(-1); } }
+@keyframes schwebend { 0%, 100% { transform: translateX(10vw); } 50% { transform: translateX(calc(100vw - 140%)); } }
+@keyframes krabbeln-quer { 0%, 100% { transform: translateX(6vw); } 50% { transform: translateX(calc(100vw - 120%)); } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+@keyframes schwebenauf { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-26px) scale(.94, 1.06); } }
+@keyframes wackeln-klein { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+.laden-wrap { display: flex; flex-direction: column; gap: 6px; padding: 0 0 120px; max-width: none !important; }
+.label.hell { color: #fff; opacity: 1; padding: 0 18px; text-shadow: 0 2px 3px rgba(0, 0, 0, .5); }
+.laden { display: flex; gap: 10px; overflow-x: auto; padding: 4px 16px 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.laden::-webkit-scrollbar { display: none; }
+.laden-karte { flex: none; width: 104px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 6px; border-radius: 20px;
+  background: var(--creme); border: 3px solid var(--tinte); box-shadow: 0 5px 0 var(--creme-tief), 0 5px 0 3px var(--tinte); margin-bottom: 6px; opacity: .6; transition: transform .1s; }
+.laden-karte.kann { opacity: 1; background: #fffbe0; box-shadow: 0 5px 0 #f0c94a, 0 5px 0 3px var(--tinte), 0 0 0 6px rgba(255, 210, 63, .45); }
+.laden-karte.hat { opacity: 1; background: #d9f7f1; }
+.laden-karte:active { transform: translateY(3px); }
+.laden-bild { width: 64px; }
+.laden-name { font: 700 .82rem var(--font-titel); line-height: 1.1; text-align: center; min-height: 2.2em; display: grid; place-items: center; }
+.laden-preis { display: inline-flex; align-items: center; gap: 2px; font: 800 1rem var(--font-titel); }
+.laden-preis .art { width: 20px; }
+.laden-preis .icon { width: 22px; height: 22px; color: var(--gruen-tief); }
+.aquarium-screen .fuss { padding-top: 10px; }
+@media (prefers-reduced-motion: reduce) { .bewohner { animation: none !important; left: calc(var(--i, 1) * 10%); } }

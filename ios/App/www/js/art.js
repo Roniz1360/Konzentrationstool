@@ -334,6 +334,37 @@ const Art = (() => {
       `<path class="a-flamme" d="M50 42 C56 54 64 58 62 70 C60 80 56 84 50 84 C44 84 40 80 38 70 C36 60 46 56 50 42Z" fill="#ffe066"/>`,
     wirbel: () => `<circle cx="50" cy="50" r="42" fill="#b79cf5" ${st()}/><path d="M50 50 m0 -6 a6 6 0 1 1 -6 6 a14 14 0 1 1 14 14 a22 22 0 1 1 22 -22 a30 30 0 0 0 -30 -30" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`,
     perle: () => `<circle cx="50" cy="50" r="46" fill="#fff" opacity=".3"/><circle cx="50" cy="50" r="34" fill="#fff5fb" ${st(3.5)}/><path d="M28 60 Q50 82 74 58 Q66 80 50 82 Q34 80 28 60Z" fill="#ffc4dc"/>` + glanz(38, 36, 10, 6) + `<circle cx="62" cy="62" r="3" fill="#fff"/>`,
+    // ---------- Neue Meerestiere (Aquarium, Spiele) ----------
+    seepferdchen: () => { const c = '#ffb52e';
+      return `<path d="M48 66 Q52 92 34 90 Q22 86 28 76 Q34 70 40 78" fill="none" stroke="${O}" stroke-width="13" stroke-linecap="round"/><path d="M48 66 Q52 92 34 90 Q22 86 28 76 Q34 70 40 78" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/>` +
+        `<path d="M34 46 Q18 50 26 64 Q32 58 38 58Z" fill="#ff8fb8" ${st(2.5)}/>` +
+        `<ellipse cx="48" cy="54" rx="15" ry="20" transform="rotate(-12 48 54)" fill="${c}" ${st()}/><path d="M40 46 L54 44 M38 54 L54 52 M40 62 L54 60" fill="none" stroke="${dunkel(c, .2)}" stroke-width="2.4" stroke-linecap="round"/>` +
+        `<path d="M50 18 L54 6 L58 16 L64 8 L64 20Z" fill="${dunkel(c, .1)}" ${st(2.5)}/>` +
+        `<path d="M64 22 L88 20 Q92 26 88 31 L64 33Z" fill="${c}" ${st()}/><circle cx="56" cy="27" r="15" fill="${c}" ${st()}/>` + auge(56, 25, 4.2) + wange(62, 33, 3.5); },
+    delfin: () => `<path d="M50 34 Q56 12 68 18 Q62 26 64 36Z" fill="#3f7fd8" ${st()}/>` +
+      `<path d="M6 56 Q4 50 16 48 Q30 30 58 32 Q80 34 88 48 L98 40 Q100 54 94 62 Q100 70 98 78 L86 66 Q70 76 44 72 Q24 70 16 62 Q6 62 6 56Z" fill="#5aa0f0" ${st()}/>` +
+      `<path d="M16 60 Q40 72 82 64 Q66 74 44 72 Q26 70 16 62Z" fill="#e3f1ff"/><path d="M44 64 Q40 82 52 84 Q52 72 58 66Z" fill="#3f7fd8" ${st(2.5)}/>` +
+      auge(28, 47, 4.2) + `<path d="M8 56 Q14 60 22 58" fill="none" ${st(2.4)}/>` + wange(32, 56, 4) + glanz(50, 38, 12, 3.5, -6),
+    rochen: () => `<path d="M50 72 Q54 90 70 96" fill="none" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M50 72 Q54 90 70 96" fill="none" stroke="#7f8fd8" stroke-width="3" stroke-linecap="round"/>` +
+      `<path d="M50 20 Q72 28 97 52 Q74 60 58 72 Q50 78 42 72 Q26 60 3 52 Q28 28 50 20Z" fill="#7f8fd8" ${st()}/>` +
+      `<path d="M50 30 Q64 36 80 50 Q66 54 56 62 Q50 66 44 62 Q34 54 20 50 Q36 36 50 30Z" fill="#a9b6f0"/>` +
+      `<circle cx="30" cy="48" r="3" fill="#5a67b8"/><circle cx="70" cy="48" r="3" fill="#5a67b8"/><circle cx="24" cy="54" r="2.4" fill="#5a67b8"/><circle cx="76" cy="54" r="2.4" fill="#5a67b8"/>` +
+      auge(43, 44, 3.6) + auge(57, 44, 3.6) + `<path d="M45 53 Q50 57 55 53" fill="none" ${st(2.3)}/>`,
+    hai: () => `<path d="M46 36 Q54 12 68 18 Q62 26 64 38Z" fill="#7d93b0" ${st()}/>` +
+      `<path d="M4 58 Q10 36 46 34 Q78 36 86 48 L98 34 Q96 52 98 72 L86 60 Q76 74 46 74 Q12 74 4 58Z" fill="#9fb4cc" ${st()}/>` +
+      `<path d="M8 62 Q30 74 72 66 Q62 74 46 74 Q16 74 8 62Z" fill="#f4f8fc"/><path d="M48 66 Q44 82 56 84 Q56 74 62 68Z" fill="#7d93b0" ${st(2.5)}/>` +
+      `<path d="M38 50 Q36 56 38 62 M44 50 Q42 56 44 62" fill="none" stroke="#6d829e" stroke-width="2.4" stroke-linecap="round"/>` +
+      auge(24, 50, 4.4) + `<path d="M9 62 Q18 68 28 64" fill="none" ${st(2.4)}/><path d="M14 64 L16 68 L18 65Z M20 65 L22 69 L24 65Z" fill="#fff"/>` + wange(30, 58, 4),
+    koralle: () => { const d = 'M50 96 L50 52 M50 76 Q32 70 32 48 M50 66 Q66 62 68 38 M32 60 Q20 58 20 44 M68 48 Q80 46 80 32';
+      return `<path d="${d}" fill="none" stroke="${O}" stroke-width="15" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#ff7e9a" stroke-width="9" stroke-linecap="round"/>` +
+        `<path d="M44 58 L44 54 M56 42 L56 38" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>`; },
+    riff: () => [[30, 70, 20, '#ff9a4d'], [70, 68, 22, '#ffb24d'], [50, 52, 24, '#ffa24d']].map(([x, y, r, c]) =>
+      `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" ${st()}/>`).join('') + `<circle cx="42" cy="44" r="3.5" fill="#fff" opacity=".6"/><circle cx="58" cy="56" r="3" fill="#fff" opacity=".6"/><circle cx="26" cy="66" r="3" fill="#fff" opacity=".6"/><circle cx="74" cy="62" r="3" fill="#fff" opacity=".6"/>`,
+    tang: () => tang(54, 98, 92, '#2fae7a') + tang(38, 98, 70, '#3fc48c', -1) + tang(68, 98, 56, '#27967a'),
+    anker: () => { const d = 'M50 26 L50 86 M30 40 L70 40 M16 64 Q20 88 50 88 Q80 88 84 64';
+      return `<path d="${d}" fill="none" stroke="${O}" stroke-width="14" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#a9b8cc" stroke-width="8" stroke-linecap="round"/>` +
+        `<circle cx="50" cy="16" r="10" fill="none" stroke="${O}" stroke-width="12"/><circle cx="50" cy="16" r="10" fill="none" stroke="#a9b8cc" stroke-width="6"/>` +
+        `<path d="M10 58 L16 64 L24 58 M90 58 L84 64 L76 58" fill="none" stroke="${O}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`; },
     // ---------- Meerestiere ----------
     muschel: () => muschel(),
     krabbe,
@@ -411,6 +442,20 @@ const Art = (() => {
   const sandboden = (c1, c2) => `<path d="M0 690 Q80 650 170 690 Q270 730 400 670 L400 800 L0 800Z" fill="${c1}"/><path d="M0 735 Q120 705 240 742 Q330 762 400 732 L400 800 L0 800Z" fill="${c2}"/>`;
 
   const SZENEN = {
+    vulkan: () => [['#3a1f5a', '#2a2a7a', '#1a1c4a'], .06, ['#4a3a5a', '#3a2c4a'],
+      `<path d="M120 760 L170 600 Q200 580 230 600 L280 760Z" fill="#2a1830"/><path d="M178 604 Q200 590 222 604 L214 620 Q200 612 186 620Z" fill="#ff8a3d"/>` +
+      `<ellipse cx="200" cy="600" rx="70" ry="30" fill="#ffb24d" opacity=".25"/>` + fels(-30, 780, 160, 210, '#1a1028') + fels(290, 780, 150, 240, '#1a1028') +
+      astKoralle(330, 720, 1, '#ff8a3d') + punkte(30, 400, 60, 520, 41, '#ffd9a0', 2.2, .7)],
+    graben: () => [['#071030', '#0c1a50', '#14246a'], .04, null,
+      fels(-40, 800, 170, 420, '#040a22') + fels(280, 800, 170, 460, '#040a22') + astKoralle(60, 760, 1.3, '#4dffd2') + astKoralle(352, 740, 1.2, '#ff6fe0') +
+      kugelKoralle(110, 780, .9, '#7af0ff') + punkte(70, 400, 20, 760, 53, '#7af0ff', 2.4, .9)],
+    wrack: () => [['#5fd0c8', '#2a8a9a', '#16506a'], .18, ['#d9c58f', '#c2ab72'],
+      `<path d="M60 720 L110 600 L330 600 L360 700 L300 740Z" fill="#5a3a24"/><path d="M110 600 L330 600 L320 624 L118 624Z" fill="#7a5232"/>` +
+      `<path d="M210 600 L210 440 M210 470 L290 500 L210 530" fill="none" stroke="#6b4324" stroke-width="9"/><circle cx="150" cy="660" r="16" fill="#163a4a"/><circle cx="220" cy="664" r="16" fill="#163a4a"/><circle cx="290" cy="666" r="14" fill="#163a4a"/>` +
+      tang(30, 730, 200, '#2a9a7a') + tang(380, 724, 160, '#2fae7a', -1)],
+    perlgrund: () => [['#ffd8f0', '#c8a0f0', '#6a5ac8'], .22, ['#f6e2f0', '#e6c4dc'],
+      `<g transform="translate(-24 600) scale(.9)">${muschel('#ffb8d8')}</g><g transform="translate(334 620) scale(.8)">${muschel('#c8b0ff')}</g>` +
+      kugelKoralle(200, 770, .8, '#ff9ad0') + punkte(18, 400, 80, 500, 61, '#fff', 3, .8)],
     // name: [Wasserfarben, Lichtstrahlen, Sand, Deko]
     riff: () => [['#9af3ea', '#3fc8d8', '#1f8fc4'], .26, ['#f3dfa8', '#e6c784'],
       astKoralle(34, 712, 1.2, '#ff7e9a') + kugelKoralle(84, 730, 1, '#ffa24d') + astKoralle(372, 700, 1.4, '#ff9a4d') + kugelKoralle(322, 726, 1.1, '#ff7eb6') +
@@ -448,11 +493,11 @@ const Art = (() => {
   // ============================================================
   // TAUCHKARTE – von der Wasseroberfläche hinab in die Tiefsee
   // ============================================================
-  const KARTE_H = 1240;
+  const KARTE_H = 1780;
   function karte(zeit, orte) {
     const id = 'k' + (++uid), H = KARTE_H;
     const nacht = zeit === 'nacht', abend = zeit === 'abend';
-    let s = `<defs>${grad(id + 'h', HIMMEL[zeit] || HIMMEL.tag)}${grad(id + 'g', ['#7fe9e6', '#3fc0dc', '#2590cc', '#1c63b0', '#1a3f8f', '#1b2a70', '#141a50'])}${grad(id + 'l', ['#ffffff', '#ffffff00'])}</defs>` +
+    let s = `<defs>${grad(id + 'h', HIMMEL[zeit] || HIMMEL.tag)}${grad(id + 'g', ['#7fe9e6', '#3fc0dc', '#2590cc', '#1c63b0', '#1a3f8f', '#1b2a70', '#141a50', '#0a1036', '#060a26'])}${grad(id + 'l', ['#ffffff', '#ffffff00'])}</defs>` +
       `<rect width="400" height="${H}" fill="url(#${id}g)"/><rect width="400" height="232" fill="url(#${id}h)"/>`;
     // Himmel über dem Wasser
     if (nacht) s += punkte(26, 400, 0, 190, 3, '#fff', 1.4, 1) + `<circle cx="320" cy="76" r="26" fill="#fff6c9"/><circle cx="320" cy="76" r="38" fill="#fff6c9" opacity=".25"/>`;
@@ -471,9 +516,15 @@ const Art = (() => {
     [[-30, 470, 110, 120], [330, 560, 110, 150], [-40, 760, 120, 170], [320, 860, 120, 160], [-30, 1010, 130, 190], [310, 1090, 130, 170]].forEach(([x, y, w, h], i) => { s += fels(x, y, w, h, mix('#2f86b8', '#10184a', y / H)); });
     s += astKoralle(24, 470, 1, '#ff7e9a') + kugelKoralle(372, 560, 1, '#ffa24d') + tang(16, 760, 150, '#2fae7a') + tang(388, 860, 170, '#27967a', -1) + astKoralle(30, 1010, 1.1, '#b79cf5') + kugelKoralle(366, 1090, 1.1, '#7ad7ff') +
       tang(200, 420, 90, '#3fc48c') + tang(206, 660, 70, '#2fae7a', -1);
+    // Tiefsee-Graben: dunkler, mit leuchtenden Korallen und Plankton
+    s += `<path d="M0 1222 Q100 1200 200 1218 Q300 1236 400 1212" fill="none" stroke="#9affe0" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round" opacity=".6"/>` +
+      `<text x="200" y="1250" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="19" letter-spacing="3" fill="#9affe0" opacity=".75">TIEFSEE-GRABEN</text>`;
+    [[-40, 1330, 140, 230], [300, 1440, 140, 250], [-50, 1580, 150, 260], [300, 1700, 150, 240]].forEach(([x, y, w, h]) => { s += fels(x, y, w, h, '#070c2c'); });
+    s += astKoralle(26, 1330, 1.1, '#4dffd2') + astKoralle(374, 1440, 1.1, '#ff6fe0') + kugelKoralle(30, 1580, 1, '#7af0ff') + astKoralle(370, 1700, 1.2, '#ffd23f');
+    s += `<g opacity=".22" fill="#9affe0"><circle cx="230" cy="1350" r="5"/><path d="M230 1350 Q250 1330 270 1340" stroke="#9affe0" stroke-width="3" fill="none"/><path d="M250 1356 Q260 1340 300 1350 Q310 1366 290 1376 Q262 1380 250 1366Z"/></g>`;
     // Meeresgrund mit Schatzleuchten
-    s += `<ellipse cx="270" cy="1160" rx="130" ry="56" fill="#ffd66b" opacity=".2"/><path d="M0 1200 Q100 1170 200 1198 Q300 1224 400 1190 L400 ${H} L0 ${H}Z" fill="#2a3a7a"/>` +
-      punkte(36, 400, 760, 440, 31, '#9affe0', 2.2, .8);
+    s += `<ellipse cx="270" cy="${H - 70}" rx="130" ry="56" fill="#ffd66b" opacity=".18"/><path d="M0 ${H - 40} Q100 ${H - 70} 200 ${H - 42} Q300 ${H - 16} 400 ${H - 50} L400 ${H} L0 ${H}Z" fill="#1a2458"/>` +
+      punkte(36, 400, 760, 440, 31, '#9affe0', 2.2, .8) + punkte(60, 400, 1240, 520, 37, '#9affe0', 2.4, .9);
     // Tauchroute als Blasenspur
     const p = orte.map((o) => [o.x, o.y]);
     let d = `M200 262 Q${p[0][0]} 280 ${p[0][0]} ${p[0][1]}`;
@@ -496,6 +547,8 @@ const Art = (() => {
     nochmal: '<path d="M78 50 A28 28 0 1 1 64 26" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M58 8 L84 22 L60 40Z" fill="currentColor"/>',
     haken: '<path d="M18 54 L40 76 L84 26" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>',
     plus: '<path d="M50 18 L50 82 M18 50 L82 50" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round"/>',
+    zu: '<rect x="20" y="44" width="60" height="44" rx="9" fill="currentColor"/><path d="M33 46 V32 Q33 13 50 13 Q67 13 67 32 V46" fill="none" stroke="currentColor" stroke-width="10"/>',
+    aquarium: '<path d="M10 50 Q32 20 62 32 L88 16 L82 50 L88 84 L62 68 Q32 80 10 50Z" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/><circle cx="30" cy="46" r="6" fill="currentColor"/>',
     stern: '<path d="' + sternPfad(50, 53, 44, 20) + '" fill="currentColor" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>',
   };
   const icon = (name, cls = '') => svg(ICON[name] || '', '0 0 100 100', 'icon ' + cls);

@@ -165,14 +165,16 @@
       tap(b, fn);
       return b;
     };
-    bar.append(mk('karte', 'karte', 'Meer', () => start()), mk('album', 'album', 'Album', () => albumZeigen()), mk('eltern', 'eltern', 'Eltern', () => pinAbfrage()));
+    bar.append(mk('karte', 'karte', 'Meer', () => start()), mk('aquarium', 'aquarium', 'Aquarium', () => aquariumZeigen()), mk('album', 'album', 'Album', () => albumZeigen()), mk('eltern', 'eltern', 'Eltern', () => pinAbfrage()));
     return bar;
   }
 
   // ============================================================
   // TAUCHKARTE (Home)
   // ============================================================
-  const ORTE = { pilz: [105, 385], echo: [314, 468], gleich: [110, 590], sort: [300, 690], zahlen: [120, 800], woerter: [300, 905], finde: [110, 1010], geschichte: [270, 1130] };
+  const ORTE = { pilz: [105, 385], echo: [314, 468], gleich: [110, 590], sort: [300, 690], zahlen: [120, 800], woerter: [300, 905], finde: [110, 1010], geschichte: [270, 1130],
+    blasen: [110, 1330], schatten: [300, 1440], silben: [110, 1560], muster: [280, 1680] };
+  const offen = (g) => !g.sterne || Store.sterneGesamt() >= g.sterne;
   let kartePos = null;   // gemerkte Scroll-Position
 
   function start() {
@@ -188,16 +190,18 @@
     karte.innerHTML = Art.karte(zeit, orte);
     const H = Art.KARTE_H;
 
-    // Nalas U-Boot wartet beim nächsten Ort ohne Sterne (sonst an der Oberfläche)
-    const ziel = orte.find((o) => !Store.getSterne(o.g.id));
+    // Nalas U-Boot wartet beim nächsten offenen Ort ohne Sterne (sonst an der Oberfläche)
+    const ziel = orte.find((o) => offen(o.g) && !Store.getSterne(o.g.id));
     orte.forEach((o, i) => {
-      const n = Store.getSterne(o.g.id);
-      const b = el('button', 'ort' + (n ? ' besucht' : '') + (ziel === o ? ' ziel' : ''));
+      const n = Store.getSterne(o.g.id), auf = offen(o.g);
+      const b = el('button', 'ort' + (n ? ' besucht' : '') + (ziel === o ? ' ziel' : '') + (auf ? '' : ' gesperrt'));
       b.style.left = (o.x / 400 * 100) + '%'; b.style.top = (o.y / H * 100) + '%';
       b.style.setProperty('--farbe', o.g.farbe); b.style.animationDelay = (-i * 0.45) + 's';
-      b.append(html('span', 'ort-bild', Art.bild(o.g.bild)), sterneReihe(n, 'ort-sterne'), el('span', 'ort-name', o.g.ort));
-      b.setAttribute('aria-label', o.g.ort + ': ' + o.g.name);
-      tap(b, () => ortKarte(o.g));
+      const bildEl = html('span', 'ort-bild', Art.bild(o.g.bild));
+      if (!auf) bildEl.append(html('span', 'schloss-marke', Art.icon('zu') + `<b>${o.g.sterne}</b>`));
+      b.append(bildEl, auf ? sterneReihe(n, 'ort-sterne') : el('span', 'ort-sterne'), el('span', 'ort-name', o.g.ort));
+      b.setAttribute('aria-label', o.g.ort + ': ' + o.g.name + (auf ? '' : ' (noch verschlossen)'));
+      tap(b, () => (auf ? ortKarte(o.g) : gesperrtKarte(o.g)));
       karte.append(b);
     });
     const nx = ziel ? ziel.x + (ziel.x < 200 ? 84 : -84) : 230, ny = ziel ? ziel.y - 4 : 282;
@@ -222,7 +226,7 @@
     tap(prof, loginScreen);
     kopf.append(prof);
     const zahlen = el('div', 'kopf-zahlen');
-    zahlen.append(funkenZahl(p.punkte), html('span', 'funken-zahl', Art.sternSVG(true) + `<b>${Store.sterneGesamt()}</b>`));
+    zahlen.append(funkenZahl(Store.perlen()), html('span', 'funken-zahl', Art.sternSVG(true) + `<b>${Store.sterneGesamt()}</b>`));
     kopf.append(zahlen);
     s.append(kopf);
 
@@ -238,9 +242,50 @@
       scroll.scrollTop = kartePos != null ? kartePos : Math.max(0, (ny / H) * k - scroll.clientHeight * 0.55);
     });
     scroll.addEventListener('scroll', () => { kartePos = scroll.scrollTop; }, { passive: true });
+
+    // Neu freigeschaltete Orte feiern (einmal pro Ort)
+    const neu = Games.katalog.filter((g) => g.sterne && offen(g) && !Store.orteBekannt().includes(g.id));
+    if (neu.length) setTimeout(() => { if (s.isConnected) ortEntdeckt(neu[0], scroll, karte); }, 700);
   }
 
-  const BEREICH = { aufmerksamkeit: 'Aufmerksamkeit', gedaechtnis: 'Gedächtnis', rechnen: 'Rechnen', lesen: 'Lesen' };
+  function gesperrtKarte(g) {
+    const fehlt = g.sterne - Store.sterneGesamt();
+    const h = el('div', 'dialog-huelle');
+    const d = el('div', 'dialog ort-dialog');
+    d.style.setProperty('--farbe', g.farbe);
+    d.append(html('div', 'ort-gross gesperrt', Art.bild(g.bild) + `<span class="schloss-marke">${Art.icon('zu')}</span>`));
+    d.append(el('div', 'ort-ueber', g.ort), el('h2', null, 'Noch verschlossen'));
+    d.append(el('p', null, fehlt === 1 ? 'Sammle noch 1 Stern, dann öffnet sich dieser Ort!' : `Sammle noch ${fehlt} Sterne, dann öffnet sich dieser Ort!`));
+    d.append(sterneFortschritt(Store.sterneGesamt(), g.sterne));
+    d.append(knopf('Okay', null, 'gross sonne', () => h.remove()));
+    h.append(d); h.addEventListener('click', (e) => { if (e.target === h) h.remove(); });
+    document.body.append(h);
+    Audio.sprich(d.querySelector('p').textContent);
+  }
+  function sterneFortschritt(ist, soll) {
+    const w = el('div', 'stern-fortschritt');
+    const linie = el('div', 'fortschritt-linie'); const sp = el('span'); sp.style.width = Math.min(100, Math.round(ist / soll * 100)) + '%'; linie.append(sp);
+    w.append(html('span', 'funken-zahl', Art.sternSVG(true) + `<b>${ist} / ${soll}</b>`), linie);
+    return w;
+  }
+
+  function ortEntdeckt(g, scroll, karte) {
+    Store.ortBekannt(g.id);
+    const ziel = karte.querySelectorAll('.ort')[Games.katalog.indexOf(g)];
+    if (ziel) ziel.scrollIntoView({ block: 'center', behavior: FX.ruhig() ? 'auto' : 'smooth' });
+    const h = el('div', 'dialog-huelle');
+    const d = el('div', 'dialog ort-dialog entdeckt');
+    d.style.setProperty('--farbe', g.farbe);
+    d.append(html('div', 'ort-gross', Art.bild(g.bild)));
+    d.append(el('div', 'ort-ueber', 'Neuer Ort entdeckt!'), el('h2', null, g.ort), el('p', null, g.kurz));
+    d.append(knopf('Hinschwimmen', 'play', 'gross sonne', () => { h.remove(); FX.wechsel(() => einzelspiel(g.id)); }));
+    d.append(knopf('Später', null, 'zweit klein', () => { h.remove(); if (ziel) FX.anim(ziel, 'huepf', 600); }));
+    h.append(d); document.body.append(h);
+    Audio.jubel(); FX.konfetti(80);
+    Audio.sprich(`Juhu! Du hast einen neuen Ort entdeckt: ${g.ort}!`);
+  }
+
+  const BEREICH = { aufmerksamkeit: 'Aufmerksamkeit', gedaechtnis: 'Gedächtnis', rechnen: 'Rechnen', lesen: 'Lesen', logik: 'Logik' };
   // Karte eines Ortes: was man dort spielt
   function ortKarte(g) {
     const h = el('div', 'dialog-huelle');
@@ -313,12 +358,13 @@
   // TAUCHGANG: 4 Orte nacheinander (10–15 Min.)
   // ============================================================
   function tagesAuswahl() {
-    // Mischung: 1 Aufmerksamkeit + 1 Schulstoff + 1 Gedächtnis (+ optional)
-    const auf = ['pilz', 'sort', 'finde'];
-    const schule = ['zahlen', 'woerter'];
-    const ged = ['echo', 'gleich', 'geschichte'];
+    // Mischung: 1 Aufmerksamkeit/Logik + 1 Schulstoff + 1 Gedächtnis + 1 weiteres – nur offene Orte
+    const ids = (bereiche) => Games.katalog.filter((g) => offen(g) && bereiche.includes(g.bereich)).map((g) => g.id);
+    const auf = ids(['aufmerksamkeit', 'logik']), schule = ids(['rechnen', 'lesen']), ged = ids(['gedaechtnis']);
     const wahl = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const liste = [wahl(auf), wahl(schule), wahl(ged)];
+    // Neue Orte bevorzugen, damit sie auch im Tauchgang vorkommen
+    const neuZuerst = (arr) => { const n = arr.filter((id) => !Store.getSterne(id)); return n.length && Math.random() < 0.6 ? n : arr; };
+    const liste = [wahl(neuZuerst(auf)), wahl(neuZuerst(schule)), wahl(neuZuerst(ged))];
     const rest = auf.concat(schule, ged).filter((id) => !liste.includes(id));
     liste.push(wahl(rest));
     return liste;
@@ -402,6 +448,90 @@
       const pr = Store.punkteGeben(gained);
       FX.wechsel(() => { ergebnis(g, erg, gained, pr, 'Zurück zur Karte', () => FX.wechsel(start)); Audio.jubel(); });
     }, hud);
+  }
+
+  // ============================================================
+  // AQUARIUM – mit Perlen Meeresbewohner und Deko holen
+  // ============================================================
+  // art: wie es sich bewegt (schwimmt, schwebt, krabbelt, liegt = Deko am Boden)
+  const LADEN = [
+    { id: 'fisch', name: 'Fisch', preis: 30, art: 'schwimmt' },
+    { id: 'tang', name: 'Seegras', preis: 20, art: 'liegt' },
+    { id: 'zierfisch', name: 'Streifenfisch', preis: 40, art: 'schwimmt' },
+    { id: 'seestern', name: 'Seestern', preis: 50, art: 'liegt' },
+    { id: 'koralle', name: 'Koralle', preis: 40, art: 'liegt' },
+    { id: 'krabbe', name: 'Krabbe', preis: 70, art: 'krabbelt' },
+    { id: 'qualle', name: 'Qualle', preis: 90, art: 'schwebt' },
+    { id: 'riff', name: 'Riffkoralle', preis: 60, art: 'liegt' },
+    { id: 'kugelfisch', name: 'Kugelfisch', preis: 110, art: 'schwimmt' },
+    { id: 'muschel', name: 'Riesenmuschel', preis: 100, art: 'liegt' },
+    { id: 'seepferdchen', name: 'Seepferdchen', preis: 140, art: 'schwebt' },
+    { id: 'anker', name: 'Anker', preis: 80, art: 'liegt' },
+    { id: 'schildkroete', name: 'Schildkröte', preis: 170, art: 'schwimmt' },
+    { id: 'oktopus', name: 'Krake', preis: 200, art: 'schwebt' },
+    { id: 'truhe', name: 'Schatztruhe', preis: 120, art: 'liegt' },
+    { id: 'rochen', name: 'Rochen', preis: 240, art: 'schwimmt' },
+    { id: 'delfin', name: 'Delfin', preis: 280, art: 'schwimmt' },
+    { id: 'hai', name: 'Hai', preis: 320, art: 'schwimmt' },
+    { id: 'wal', name: 'Wal', preis: 400, art: 'schwimmt' },
+  ];
+
+  function aquariumZeigen(neuId) {
+    const s = schirm('aquarium-screen', 'lagune');
+    Music.play('menu'); Natur.set('riff');
+    const kopf = el('div', 'aqua-kopf');
+    kopf.append(el('h1', 'titel-zeile', 'Mein Aquarium'), funkenZahl(Store.perlen()));
+    s.append(kopf);
+
+    const becken = el('div', 'becken');
+    const besitz = Store.aquarium();
+    const deko = LADEN.filter((t) => t.art === 'liegt' && besitz.includes(t.id));
+    const tiere = LADEN.filter((t) => t.art !== 'liegt' && besitz.includes(t.id));
+    deko.forEach((t, k) => {
+      const e = html('div', 'deko', Art.bild(t.id));
+      e.style.left = ((k * 37 + 6) % 82) + '%';
+      e.style.zIndex = 1 + (k % 3);
+      becken.append(e);
+    });
+    tiere.forEach((t, k) => becken.append(bewohner(t, k, t.id === neuId)));
+    if (!besitz.length) becken.append(el('p', 'becken-leer', 'Noch leer. Hol dir mit deinen Perlen den ersten Bewohner!'));
+    s.append(becken);
+
+    // Laden: waagrecht scrollbare Reihe
+    const laden = el('div', 'laden');
+    LADEN.forEach((t) => {
+      const hat = besitz.includes(t.id), kann = Store.perlen() >= t.preis;
+      const k = el('button', 'laden-karte' + (hat ? ' hat' : kann ? ' kann' : ''));
+      k.append(html('span', 'laden-bild', Art.bild(t.id)), el('span', 'laden-name', t.name));
+      k.append(hat ? html('span', 'laden-preis', Art.icon('haken')) : html('span', 'laden-preis', Art.bild('perle') + `<b>${t.preis}</b>`));
+      tap(k, () => {
+        if (hat) { Audio.sprich(t.name); return; }
+        if (!kann) { FX.anim(k, 'wackel', 500); Audio.sprich(`Für ${t.name === 'Wal' ? 'den Wal' : t.name} brauchst du noch ${t.preis - Store.perlen()} Perlen.`); return; }
+        dialog(`${t.name} für ${t.preis} Perlen holen?`, 'Holen!', 'Nein', () => {
+          if (Store.kaufen(t.id, t.preis)) { Audio.jubel(); aquariumZeigen(t.id); setTimeout(() => FX.konfetti(50), 200); Audio.sprich(`Willkommen im Aquarium, ${t.name}!`); }
+        });
+      });
+      laden.append(k);
+    });
+    const ladenWrap = el('div', 'laden-wrap');
+    ladenWrap.append(el('div', 'label hell', 'Laden'), laden);
+    s.append(ladenWrap);
+    const fuss = el('div', 'fuss'); fuss.append(tabbar('aquarium')); s.append(fuss);
+  }
+
+  // Ein Bewohner, der durchs Becken schwimmt; Antippen = Freude
+  function bewohner(t, k, neu) {
+    const e = el('button', 'bewohner ' + t.art + (neu ? ' neu' : ''));
+    const innen = html('span', 'innen', Art.bild(t.id));
+    e.append(innen);
+    const z = (a, b) => a + Math.random() * (b - a);
+    e.style.top = (t.art === 'krabbelt' ? 74 : z(8, 58)) + '%';
+    e.style.setProperty('--dauer', z(14, 24).toFixed(1) + 's');
+    e.style.animationDelay = (-z(0, 20)).toFixed(1) + 's';
+    innen.style.animationDelay = (-z(0, 3)).toFixed(1) + 's';
+    e.setAttribute('aria-label', t.name);
+    e.addEventListener('pointerdown', () => { FX.anim(innen, 'huepf', 500); Audio.blubb(); FX.funkenAn(e, { typ: 'blase', n: 6, farben: ['#fff'], g: -220, kraft: 110 }); Audio.sprich(t.name); });
+    return e;
   }
 
   // ============================================================
@@ -513,7 +643,7 @@
     tap(raus, start);
     kopf.append(raus); s.append(kopf);
 
-    s.append(el('p', 'mini', `Aktives Profil: ${p.name} · ${p.punkte} Perlen · Stufe ${Store.rang()} · ${Store.sterneGesamt()} Sterne`));
+    s.append(el('p', 'mini', `Aktives Profil: ${p.name} · ${p.punkte} Perlen gesammelt (${Store.perlen()} übrig) · Stufe ${Store.rang()} · ${Store.sterneGesamt()} Sterne · ${Store.aquarium().length} Aquarium-Bewohner`));
 
     // Trainingszeit
     const heute0 = new Date(); heute0.setHours(0, 0, 0, 0);
